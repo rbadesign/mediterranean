@@ -1,0 +1,33 @@
+/* CSS Document */
+
+body {
+	text-align: center;
+}
+.limit-product-template, 
+.forecast-product-template, 
+.cuisine-item-product-template, 
+.cuisine-item-template, 
+.planner-item-cuisine-template,
+.planner-item-template,
+.diary-item-cuisine-template,
+.diary-item-template,
+.available-cuisine-template {
+	display:none;
+}
+
+#about, #help {
+	text-align:justify;
+}
+
+.cuisine-image {
+	height:120px;
+}
+
+#limits .ui-grid-a .ui-block-a,
+#forecast .ui-grid-a .ui-block-a {
+	width: 35%; 
+}
+#limits .ui-grid-a .ui-block-b,
+#forecast .ui-grid-a .ui-block-b { 
+	width: 65%; 
+} 
