@@ -1092,7 +1092,7 @@ function querySameCuisines(db,item,cuisineTypeId) {
 	}
 }
 
-$(document).on ('pageinit', '#main', function (event) {
+$(document).one ('pageinit', '#main', function (event) {
 	hideAll();
 
 	for(i=1; i<10 ; i++) {
