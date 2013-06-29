@@ -3,11 +3,10 @@
         xmlns:gap = "http://phonegap.com/ns/1.0"
         id        = "com.rbadesign.mediterranean"
         version   = "1.0.0">
-    <name>Средиземноморская диета</name>
+    <name>Mediterranean diet</name>
 
     <description>
-		Средиземномо́рская дие́та — тип питания, характерный для средиземноморского региона.
-        Средиземноморская диета — не какая-то определенная система или инструкция, а собрание пищевых привычек и принципов, которым традиционно следуют люди Средиземноморья. Диета стала популярной в связи с так называемым французским парадоксом: несмотря на то, что жители юга Франции потребляют довольно большое количество жира, они имеют гораздо более низкие показатели сердечно-сосудистых заболеваний, чем жители таких стран, как США.
+		The Mediterranean diet is a modern nutritional recommendation inspired by the traditional dietary patterns of southern Italy, Greece, and Spain The principal aspects of this diet include proportionally high consumption of olive oil, legumes, unrefined cereals, fruits, and vegetables, moderate to high consumption of fish, moderate consumption of dairy products (mostly as cheese and yogurt), moderate wine consumption, and low consumption of meat and meat products.
     </description>
 
     <author href="http://rbadesign.us" email="protopopov@rba-design.ru">
