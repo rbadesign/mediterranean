@@ -1477,4 +1477,10 @@ function onDeviceReady() {
 	console.log('deviceready');
 //	window.history.back = navigator.app.origHistoryBack;
 	deviceReadyDeferred.resolve();
+	document.addEventListener("backbutton", handleBackButton, true);
+}
+
+function handleBackButton() {
+	console.log("back clicked");
+	window.history.back();
 }
