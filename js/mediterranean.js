@@ -1161,12 +1161,13 @@ $.when(deviceReadyDeferred, jqmReadyDeferred).then(function() {
 });
 
 $(document).on( 'pageshow','#main',function(event){
-	hideAll();
-	showAvailable();
 });
 	
 $(document).on( 'pageinit','#main',function(event){
 		
+	hideAll();
+	showAvailable();
+	
 	var today = new Date();
 	$("#forecast-date").val($.format.date(today,"yyyy-MM-dd"));
 	$("#available-date").val($.format.date(today,"yyyy-MM-dd"));
