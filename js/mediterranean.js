@@ -1165,7 +1165,7 @@ $(document).on( 'pageshow','#main',function(event){
 	showAvailable();
 });
 	
-$(document).one( 'pageinit','#main',function(event){
+$(document).on( 'pageinit','#main',function(event){
 		
 	var today = new Date();
 	$("#forecast-date").val($.format.date(today,"yyyy-MM-dd"));
