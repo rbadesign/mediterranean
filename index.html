@@ -21,9 +21,10 @@
 		$.mobile.selectmenu.prototype.options.nativeMenu = false;
 		$.support.cors = true;
 		$.mobile.allowCrossDomainPages = true;
-		$.mobile.phonegapNavigationEnabled = false;
+		$.mobile.phonegapNavigationEnabled = true;
 		$.mobile.page.prototype.options.domCache = true;
-		$.mobile.ajaxEnabled=false;
+		$.mobile.ajaxEnabled=true;
+		$.mobile.pushStateEnabled=true;
 	});
   </script>
   <script src="js/jquery.mobile.js"></script>
@@ -39,7 +40,7 @@
 </head>
 <body>
 <!-- Home -->
-<div data-role="page" id="main">
+<div data-role="page" id="main" data-dom-cache="true">
     <div data-theme="b" data-role="header">
        <div data-role="navbar">
             <ul>
