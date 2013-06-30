@@ -1093,6 +1093,7 @@ function querySameCuisines(db,item,cuisineTypeId) {
 }
 
 $(document).one( 'pagebeforecreate','#main',function(event){
+	console.log('pagebeforecreate','main');
 
 	for(i=1; i<10 ; i++) {
 		var option = "<option value='"+i+"'>"+i+" раз"+"</option>";
@@ -1148,6 +1149,7 @@ var deviceReadyDeferred = $.Deferred();
 var jqmReadyDeferred = $.Deferred();
 
 $.when(deviceReadyDeferred, jqmReadyDeferred).then(function() {
+	console.log('when(deviceReadyDeferred, jqmReadyDeferred).then','start');
 	queryLimits();
 	saveLimits();
 	
@@ -1158,12 +1160,15 @@ $.when(deviceReadyDeferred, jqmReadyDeferred).then(function() {
 	queryForecast();
 	queryPlanner();
 	queryDiary();
+	console.log('when(deviceReadyDeferred, jqmReadyDeferred).then','end');
 });
 
 $(document).on( 'pageshow','#main',function(event){
+	console.log('pageshow','main');
 });
 	
 $(document).on( 'pageinit','#main',function(event){
+	console.log('pageinit','main');
 		
 	hideAll();
 	showAvailable();
@@ -1450,12 +1455,15 @@ $(document).on( 'pageinit','#main',function(event){
 });
 
 function fail(error) {        
+	console.log('Fail',error);
 	navigator.notification.alert('Error code: ' + error.code, null, 'Fail');
 }
 function errorCB(error) {
+	console.log('Database Error',error);
 	navigator.notification.alert('Error code: ' + error.code, null, 'Database Error');
 }
 function successCB(tx, results) {
+	console.log('successCB',results);
 }
 			
 
@@ -1466,5 +1474,7 @@ document.addEventListener("deviceready", onDeviceReady, false);
 // Cordova is ready
 //
 function onDeviceReady() {
+	console.log('deviceready');
+	window.history.back = navigator.app.origHistoryBack;
 	deviceReadyDeferred.resolve();
 }
