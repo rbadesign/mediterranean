@@ -1482,5 +1482,8 @@ function onDeviceReady() {
 
 function handleBackButton() {
 	console.log("back clicked");
-	window.history.back();
+//	if(window.history.length) {
+//		window.history.back();
+//	}
+//	return false;
 }
