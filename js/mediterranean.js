@@ -1092,7 +1092,8 @@ function querySameCuisines(db,item,cuisineTypeId) {
 	}
 }
 
-$( document ).delegate("#main", "pagebeforecreate", function() {
+$(document).one( 'pagebeforecreate','#main',function(event){
+
 	for(i=1; i<10 ; i++) {
 		var option = "<option value='"+i+"'>"+i+" раз"+"</option>";
 		$("#limit-product-id-qty").append(option);
@@ -1159,10 +1160,13 @@ $.when(deviceReadyDeferred, jqmReadyDeferred).then(function() {
 	queryDiary();
 });
 
-$( document ).delegate("#main", "pageinit", function() {
-	
+$(document).on( 'pageshow','#main',function(event){
 	hideAll();
+	showAvailable();
+});
 	
+$(document).one( 'pageinit','#main',function(event){
+		
 	var today = new Date();
 	$("#forecast-date").val($.format.date(today,"yyyy-MM-dd"));
 	$("#available-date").val($.format.date(today,"yyyy-MM-dd"));
@@ -1173,8 +1177,6 @@ $( document ).delegate("#main", "pageinit", function() {
 	
 	jqmReadyDeferred.resolve();
 
-	showAvailable();
-		
 	$(".planner-link").bind("vclick", function(event,ui) {
 		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
 		hideAll();
