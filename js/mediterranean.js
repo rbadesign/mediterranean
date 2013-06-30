@@ -247,9 +247,9 @@ function addCuisineItem() {
 	item.prependTo(".cuisine-items").removeClass("cuisine-item-template").addClass("cuisine-item").collapsible({ collapsed: false }); 
 	item.data("data",cuisineId.length);
 	cuisineId.push(-1);
-	item.find("select.cuisine-type").selectmenu();
-	item.find("select.cuisine-product").slider();
 	item.find("[data-role='none']").removeAttr("data-role");
+//	item.find("select.cuisine-type").selectmenu();
+	item.find("select.cuisine-product").attr("data-role","slider");
 	item.trigger("create");
 	item.validate();
 
@@ -409,7 +409,7 @@ function deleteDiary(item) {
 
 function saveDiary(item) {
 	var itemData = item.data("data");
-	var datetime = Data.parse(item.find("#cuisine-datetime").val());
+	var datetime = Date.parse(item.find("#cuisine-datetime").val());
 	try {
 		var db = getDatabase();
 		
@@ -564,7 +564,7 @@ function deletePlanner(item) {
 
 function savePlanner(item) {
 	var itemData = item.data("data");
-	var datetime = Data.parse(item.find("#cuisine-datetime").val());
+	var datetime = Date.parse(item.find("#cuisine-datetime").val());
 	try {
 		var db = getDatabase();
 		
@@ -834,8 +834,8 @@ function queryLimits() {
 			var successSelect = function (tx, results) {
 				var len = results.rows.length;
 				for (var i=0; i<len; i++){
-					$("#limit-"+results.rows.item(i).product_id+"-qty").val(results.rows.item(i).product_qty);
-					$("#limit-"+results.rows.item(i).product_id+"-period").val(results.rows.item(i).product_period_id);
+					$("#limit-"+results.rows.item(i).product_id+"-qty").val(results.rows.item(i).product_qty).selectmenu('refresh');
+					$("#limit-"+results.rows.item(i).product_id+"-period").val(results.rows.item(i).product_period_id).selectmenu('refresh');
 				}
 			}
 				
@@ -1092,9 +1092,7 @@ function querySameCuisines(db,item,cuisineTypeId) {
 	}
 }
 
-$(document).one ('pageinit', '#main', function (event) {
-	hideAll();
-
+$( document ).delegate("#main", "pagebeforecreate", function() {
 	for(i=1; i<10 ; i++) {
 		var option = "<option value='"+i+"'>"+i+" раз"+"</option>";
 		$("#limit-product-id-qty").append(option);
@@ -1117,8 +1115,6 @@ $(document).one ('pageinit', '#main', function (event) {
 		item.find("#cuisine-product-id").attr("id", "cuisine-"+value.id).attr("name", "cuisine-"+value.id);
 		item.find("label[for='cuisine-product-id']").attr("for","cuisine-"+value.id).text(value.title);
 		item.appendTo(".cuisine-item-products");
-		item.find("select[data-role='none']").attr("data-role","slider");
-		item.find("[data-role='none']").removeAttr("data-role");
 	});
 		
 	products.forEach(function(value,index) {
@@ -1130,7 +1126,6 @@ $(document).one ('pageinit', '#main', function (event) {
 		item.find("#forecast-"+value.id).attr("min",0).attr("max",value.qty).val(1);
 		item.appendTo(".forecast-products");
 		item.find("[data-role='none']").removeAttr("data-role");
-		item.trigger("create");
 	});
 		
 	products.forEach(function(value,index) {
@@ -1145,9 +1140,28 @@ $(document).one ('pageinit', '#main', function (event) {
 		item.find("label[for='limit-product-id-period']").attr("for","limit-"+value.id+"-period");
 		item.appendTo(".limit-products");
 		item.find("[data-role='none']").removeAttr("data-role");
-		item.trigger("create");
 	});
-	$("#limits select").selectmenu();
+});
+
+var deviceReadyDeferred = $.Deferred();
+var jqmReadyDeferred = $.Deferred();
+
+$.when(deviceReadyDeferred, jqmReadyDeferred).then(function() {
+	queryLimits();
+	saveLimits();
+	
+	queryCuisines();
+	$(".diary-items select.diary-cuisine,.planner-items select.planner-cuisine").selectmenu("refresh");
+	
+	queryAvailable();
+	queryForecast();
+	queryPlanner();
+	queryDiary();
+});
+
+$( document ).delegate("#main", "pageinit", function() {
+	
+	hideAll();
 	
 	var today = new Date();
 	$("#forecast-date").val($.format.date(today,"yyyy-MM-dd"));
@@ -1156,24 +1170,8 @@ $(document).one ('pageinit', '#main', function (event) {
 	$("#diary-to-date").val($.format.date(today,"yyyy-MM-dd"));
 	$("#planner-from-date").val($.format.date(today,"yyyy-MM-dd"));
 	$("#planner-to-date").val($.format.date(today,"yyyy-MM-dd"));
-
-	queryLimits();
-	saveLimits();
 	
-	queryCuisines();
-	
-	$(".cuisine-item").each(function (index,element) {
-		var item = $(element);
-		var itemData = item.data("data");
-		var title = item.find("#cuisine-title").val();
-		var option = "<option data-placeholder='false' value='"+cuisineId[itemData]+"'>"+title+"</option>";
-		$("select.diary-cuisine,select.planner-cuisine").append(option);
-	});
-	
-	queryAvailable();
-	queryForecast();
-	queryPlanner();
-	queryDiary();
+	jqmReadyDeferred.resolve();
 
 	showAvailable();
 		
@@ -1211,6 +1209,8 @@ $(document).one ('pageinit', '#main', function (event) {
 	$("#available .plan").bind("vclick", function(event,ui) {
 		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
 		var item = addPlannerItem();
+		var today = new Date();
+		item.find("#cuisine-datetime").val($.format.date(today,"yyyy-MM-ddTHH:mm"));
 		$(".available-cuisine").each(function(index,element) {
 			var value = $(element).data("cuisine-id");
 			var checked = $(element).find("#available-"+value+":checked");
@@ -1463,4 +1463,5 @@ document.addEventListener("deviceready", onDeviceReady, false);
 // Cordova is ready
 //
 function onDeviceReady() {
+	deviceReadyDeferred.resolve();
 }
