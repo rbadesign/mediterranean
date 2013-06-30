@@ -1475,6 +1475,6 @@ document.addEventListener("deviceready", onDeviceReady, false);
 //
 function onDeviceReady() {
 	console.log('deviceready');
-	window.history.back = navigator.app.origHistoryBack;
+//	window.history.back = navigator.app.origHistoryBack;
 	deviceReadyDeferred.resolve();
 }
