@@ -31,3 +31,9 @@ body {
 #forecast .ui-grid-a .ui-block-b { 
 	width: 65%; 
 } 
+
+div[data-role='page'] {
+	background-image: url(../images/background.jpg);
+	background-repeat: repeat;
+	background-position: center top;
+}
