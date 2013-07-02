@@ -38,64 +38,92 @@ var media = Array();
 var mediaIndex = Array();
 
 function getDatabase() {
-	var createDatabase = function(db) {
-		var populateDB = function (tx) {
-			console.log("populateDB",'start');
-			
-			var count = 0;
-			var successCreate = function (tx,results) {
-				if (++count == 10) {
-					var successDeletePerioods = function(tx,results) {
-						periods.forEach(function(value,index) {
-							var query = "INSERT INTO periods(period_id,period_title,period_delay) VALUES (?,?,?)";
-							console.log(query,[value.id,value.title,value.delay]);
-							tx.executeSql(query,[value.id,value.title,value.delay],successCB,errorCB);
-						});
-					}
-					
-					tx.executeSql("DELETE FROM periods",[],successDeletePerioods,errorCB);
-					
-					var successDeleteCuisineTypes = function(tx,results) {
-						cuisineTypes.forEach(function(value,index) {
-							var query = "INSERT INTO cuisine_types(cuisine_type_id,cuisine_type_title) VALUES (?,?)";
-							console.log(query,[value.id,value.title]);
-							tx.executeSql(query,[value.id,value.title],successCB,errorCB);
-						});			
-					}
-					
-					tx.executeSql("DELETE FROM cuisine_types",[],successDeleteCuisineTypes,errorCB);
-		
-					var successDeleteDiet = function(tx,results) {
-						products.forEach(function(value,index) {
-							var query = "INSERT INTO diet(product_id,product_title,product_qty,product_period_id) VALUES (?,?,?,?)";
-							console.log(query,[value.id,value.title,value.qty,value.period]);
-							tx.executeSql(query,[value.id,value.title,value.qty,value.period], successCB, errorCB);
-						});
-					}
-					
-					tx.executeSql("DELETE FROM diet",[],successDeleteDiet,errorCB);		
-				}
-			}
-			
-			tx.executeSql("CREATE TABLE IF NOT EXISTS periods (period_id VARCHAR(255) NOT NULL PRIMARY KEY,period_title VARCHAR(255),period_delay BIGINT)",[],successCreate,errorCB);
-			tx.executeSql("CREATE TABLE IF NOT EXISTS cuisine_types (cuisine_type_id VARCHAR(255) NOT NULL PRIMARY KEY,cuisine_type_title VARCHAR(255))",[],successCreate,errorCB);
-			tx.executeSql("CREATE TABLE IF NOT EXISTS diet (product_id VARCHAR(255) NOT NULL PRIMARY KEY,product_title VARCHAR(255),product_qty int,product_period_id VARCHAR(255))",[],successCreate,errorCB);
-			tx.executeSql("CREATE TABLE IF NOT EXISTS cuisines (cuisine_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,cuisine_type_id VARCHAR(255),cuisine_title VARCHAR(255))",[],successCreate,errorCB);
-			tx.executeSql("CREATE TABLE IF NOT EXISTS cuisine_products (cuisine_id INTEGER,product_id INTEGER,cuisine_product_qty INTEGER)",[],successCreate,errorCB);
-			tx.executeSql("CREATE TABLE IF NOT EXISTS planner (planner_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,cuisine_datetime BIGINT)",[],successCreate,errorCB);
-			tx.executeSql("CREATE TABLE IF NOT EXISTS planner_cuisines (planner_id INTEGER,cuisine_id INTEGER)",[],successCreate,errorCB);
-			tx.executeSql("CREATE TABLE IF NOT EXISTS diary (diary_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,cuisine_datetime BIGINT)",[],successCreate,errorCB);
-			tx.executeSql("CREATE TABLE IF NOT EXISTS diary_cuisines (diary_id INTEGER,cuisine_id INTEGER)",[],successCreate,errorCB);
-			tx.executeSql("CREATE TABLE IF NOT EXISTS media (diary_id INTEGER,full_path VARCHAR(255))",[],successCreate,errorCB);
+	
+	return window.openDatabase("mediterranean", "", "Mediterranean diet", 1000000);	
+}
 
+function createDatabase(db,callback) {
+	var populateDatabase = function (tx) {
+		console.log("populateDatabase",'start');
+		
+		var count = 0;
+		var successCreate = function (tx,results) {
+			if (++count == 10) {
+				var periodsReadyDeferred = $.Deferred();
+				var cuisineTypesReadyDeferred = $.Deferred();
+				var dietReadyDeferred = $.Deferred();
+				
+				$.when(periodsReadyDeferred, cuisineTypesReadyDeferred, dietReadyDeferred).then(function() {
+					callback(db);
+				});
 			
-			console.log("populateDB",'end');
+				var periodsCount = 0;
+				var cuisineTypesCount = 0;
+				var dietCount = 0;
+
+				var successDeletePeriods = function(tx,results) {
+					periods.forEach(function(value,index) {
+						var successInsert = function (tx,results) {
+							if(++periodsCount==periods.length) {
+								periodsReadyDeferred.resolve();
+							}
+						}
+						var query = "INSERT INTO periods(period_id,period_title,period_delay) VALUES (?,?,?)";
+						console.log(query,[value.id,value.title,value.delay]);
+						tx.executeSql(query,[value.id,value.title,value.delay],successInsert,StatementErrorCallback);
+					});
+				}
+				
+				tx.executeSql("DELETE FROM periods",[],successDeletePeriods,StatementErrorCallback);
+				
+				var successDeleteCuisineTypes = function(tx,results) {
+					cuisineTypes.forEach(function(value,index) {
+						var successInsert = function (tx,results) {
+							if(++cuisineTypesCount==cuisineTypes.length) {
+								cuisineTypesReadyDeferred.resolve();
+							}
+						}
+						var query = "INSERT INTO cuisine_types(cuisine_type_id,cuisine_type_title) VALUES (?,?)";
+						console.log(query,[value.id,value.title]);
+						tx.executeSql(query,[value.id,value.title],successInsert,StatementErrorCallback);
+					});			
+				}
+				
+				tx.executeSql("DELETE FROM cuisine_types",[],successDeleteCuisineTypes,StatementErrorCallback);
+	
+				var successDeleteDiet = function(tx,results) {
+					products.forEach(function(value,index) {
+						var successInsert = function (tx,results) {
+							if(++dietCount==products.length) {
+								dietReadyDeferred.resolve();
+							}
+						}
+						var query = "INSERT INTO diet(product_id,product_title,product_qty,product_period_id) VALUES (?,?,?,?)";
+						console.log(query,[value.id,value.title,value.qty,value.period]);
+						tx.executeSql(query,[value.id,value.title,value.qty,value.period], successInsert, StatementErrorCallback);
+					});
+				}
+				
+				tx.executeSql("DELETE FROM diet",[],successDeleteDiet,StatementErrorCallback);		
+			}
 		}
 		
-		db.transaction(populateDB, errorCB);
+		tx.executeSql("CREATE TABLE IF NOT EXISTS periods (period_id VARCHAR(255) NOT NULL PRIMARY KEY,period_title VARCHAR(255),period_delay BIGINT)",[],successCreate,StatementErrorCallback);
+		tx.executeSql("CREATE TABLE IF NOT EXISTS cuisine_types (cuisine_type_id VARCHAR(255) NOT NULL PRIMARY KEY,cuisine_type_title VARCHAR(255))",[],successCreate,StatementErrorCallback);
+		tx.executeSql("CREATE TABLE IF NOT EXISTS diet (product_id VARCHAR(255) NOT NULL PRIMARY KEY,product_title VARCHAR(255),product_qty int,product_period_id VARCHAR(255))",[],successCreate,StatementErrorCallback);
+		tx.executeSql("CREATE TABLE IF NOT EXISTS cuisines (cuisine_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,cuisine_type_id VARCHAR(255),cuisine_title VARCHAR(255))",[],successCreate,StatementErrorCallback);
+		tx.executeSql("CREATE TABLE IF NOT EXISTS cuisine_products (cuisine_id INTEGER,product_id INTEGER,cuisine_product_qty INTEGER)",[],successCreate,StatementErrorCallback);
+		tx.executeSql("CREATE TABLE IF NOT EXISTS planner (planner_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,cuisine_datetime BIGINT)",[],successCreate,StatementErrorCallback);
+		tx.executeSql("CREATE TABLE IF NOT EXISTS planner_cuisines (planner_id INTEGER,cuisine_id INTEGER)",[],successCreate,StatementErrorCallback);
+		tx.executeSql("CREATE TABLE IF NOT EXISTS diary (diary_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,cuisine_datetime BIGINT)",[],successCreate,StatementErrorCallback);
+		tx.executeSql("CREATE TABLE IF NOT EXISTS diary_cuisines (diary_id INTEGER,cuisine_id INTEGER)",[],successCreate,StatementErrorCallback);
+		tx.executeSql("CREATE TABLE IF NOT EXISTS media (diary_id INTEGER,full_path VARCHAR(255))",[],successCreate,StatementErrorCallback);
+
+		
+		console.log("populateDatabase",'end');
 	}
 	
-	return window.openDatabase("mediterranean", "1.0", "Mediterranean diet", 1000000, createDatabase);	
+	db.transaction(populateDatabase, TransactionErrorCallback);
 }
 
 function hideForecast() { $("#forecast").hide(); }
@@ -203,8 +231,8 @@ function addDiaryItem() {
 	item.on("vclick", ".prev-image", function(event) {
 		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
 		var itemData = $(this).parents(".diary-item").data("data");
-		var image = $($(this).parents(".diary-item").find(".cuisine-image").get(0)).find("img").get(0);
-		if(media[itemData].length>0) {
+		var image = $(this).parents(".diary-item").find(".cuisine-image img");
+		if(media[itemData].length) {
 			mediaIndex[itemData]--; if (mediaIndex[itemData]<0) mediaIndex[itemData] = 0;
 			loadImage(image,media[itemData][mediaIndex[itemData]]);
 		}
@@ -212,8 +240,8 @@ function addDiaryItem() {
 	item.on("vclick", ".next-image", function(event) {
 		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
 		var itemData = $(this).parents(".diary-item").data("data");
-		var image = $($(this).parents(".diary-item").find(".cuisine-image").get(0)).find("img").get(0);
-		if(media[itemData].length>0) {
+		var image = $(this).parents(".diary-item").find(".cuisine-image img");
+		if(media[itemData].length) {
 			mediaIndex[itemData]++; if (mediaIndex[itemData]>media[itemData].length-1) mediaIndex[itemData] = media[itemData].length-1;
 			loadImage(image,media[itemData][mediaIndex[itemData]]);
 		}
@@ -451,12 +479,12 @@ function deleteDiary(db,item,callback) {
 	}
 
 	var queryDelete = function (tx) {
-		tx.executeSql("DELETE FROM media WHERE diary_id=?",[diaryId[itemData]], successDelete, errorCB);
-		tx.executeSql("DELETE FROM diary_cuisines WHERE diary_id=?",[diaryId[itemData]], successDelete, errorCB);
-		tx.executeSql("DELETE FROM diary WHERE diary_id=?",[diaryId[itemData]], successDelete, errorCB);
+		tx.executeSql("DELETE FROM media WHERE diary_id=?",[diaryId[itemData]], successDelete, StatementErrorCallback);
+		tx.executeSql("DELETE FROM diary_cuisines WHERE diary_id=?",[diaryId[itemData]], successDelete, StatementErrorCallback);
+		tx.executeSql("DELETE FROM diary WHERE diary_id=?",[diaryId[itemData]], successDelete, StatementErrorCallback);
 	}
 	
-	db.transaction(queryDelete, errorCB);
+	db.transaction(queryDelete, TransactionErrorCallback);
 }
 
 function saveDiaryCuisines(db,item,callback) {
@@ -483,10 +511,10 @@ function saveDiaryCuisines(db,item,callback) {
 			var query =	"INSERT INTO diary_cuisines(diary_id,cuisine_id) VALUES (?,?)";
 				
 			console.log(query,[diaryId[itemData],cuisine_id]);
-			tx.executeSql(query,[diaryId[itemData],cuisine_id], successInsert, errorCB);
+			tx.executeSql(query,[diaryId[itemData],cuisine_id], successInsert, StatementErrorCallback);
 		}
 		
-		db.transaction(queryInsert, errorCB);
+		db.transaction(queryInsert, TransactionErrorCallback);
 	});
 	console.log('saveDiaryCuisines','end');
 }
@@ -513,10 +541,10 @@ function saveDiaryMedia(db,item,callback) {
 			var query =	"INSERT INTO media(diary_id,full_path) VALUES (?,?)";
 				
 			console.log(query,[diaryId[itemData],value]);
-			tx.executeSql(query,[diaryId[itemData],value], successInsert, errorCB);
+			tx.executeSql(query,[diaryId[itemData],value], successInsert, StatementErrorCallback);
 		}
 		
-		db.transaction(queryInsert, errorCB);
+		db.transaction(queryInsert, TransactionErrorCallback);
 	});
 	console.log('saveDiaryMedia','end');
 }
@@ -547,10 +575,10 @@ function saveDiary(db,item,callback) {
 				console.log('successInsert','end');
 			}
 				
-			tx.executeSql("INSERT INTO diary(cuisine_datetime) VALUES (?)",[datetime], successInsert, errorCB);
+			tx.executeSql("INSERT INTO diary(cuisine_datetime) VALUES (?)",[datetime], successInsert, StatementErrorCallback);
 		}
 		
-		db.transaction(queryInsert, errorCB);
+		db.transaction(queryInsert, TransactionErrorCallback);
 	} else {
 		var queryUpdate = function (tx) {
 			
@@ -563,7 +591,7 @@ function saveDiary(db,item,callback) {
 			
 			var query =	"UPDATE diary SET cuisine_datetime=? WHERE diary_id=?";
 			console.log(query,[datetime,diaryId[itemData]]);
-			tx.executeSql(query,[datetime,diaryId[itemData]], successUpdate, errorCB);
+			tx.executeSql(query,[datetime,diaryId[itemData]], successUpdate, StatementErrorCallback);
 			
 			var queryDeleteCuisines = function (tx) {
 				
@@ -576,10 +604,10 @@ function saveDiary(db,item,callback) {
 				
 				var query =	"DELETE FROM diary_cuisines WHERE diary_id=?";
 				console.log(query,[diaryId[itemData]]);
-				tx.executeSql(query,[diaryId[itemData]], successDeleteCuisines, errorCB);
+				tx.executeSql(query,[diaryId[itemData]], successDeleteCuisines, StatementErrorCallback);
 			}
 			
-			db.transaction(queryDeleteCuisines, errorCB);
+			db.transaction(queryDeleteCuisines, TransactionErrorCallback);
 			
 			var queryDeleteMedia = function (tx) {
 				
@@ -592,13 +620,13 @@ function saveDiary(db,item,callback) {
 				
 				var query =	"DELETE FROM media WHERE diary_id=?";
 				console.log(query,[diaryId[itemData]]);
-				tx.executeSql(query,[diaryId[itemData]], successDeleteMedia, errorCB);
+				tx.executeSql(query,[diaryId[itemData]], successDeleteMedia, StatementErrorCallback);
 			}
 			
-			db.transaction(queryDeleteMedia, errorCB);
+			db.transaction(queryDeleteMedia, TransactionErrorCallback);
 		}
 		
-		db.transaction(queryUpdate, errorCB);
+		db.transaction(queryUpdate, TransactionErrorCallback);
 	}
 	console.log('saveDiary','end');
 }
@@ -644,10 +672,10 @@ function queryDiary(db) {
 						var query = "SELECT cuisines.cuisine_id,cuisine_type_id FROM diary_cuisines JOIN cuisines ON diary_cuisines.cuisine_id=cuisines.cuisine_id WHERE diary_id=?";
 						
 						console.log(query,[diaryId[itemData]]);
-						tx.executeSql(query, [diaryId[itemData]], successCuisines, errorCB);
+						tx.executeSql(query, [diaryId[itemData]], successCuisines, StatementErrorCallback);
 					}
 					
-					db.transaction(queryCuisines, errorCB);
+					db.transaction(queryCuisines, TransactionErrorCallback);
 			
 					var queryMedia = function (tx) {
 						
@@ -655,16 +683,18 @@ function queryDiary(db) {
 							var len = results.rows.length;
 							for (var i=0; i<len; i++){
 								media[itemData].push(results.rows.item(i).full_path);
+								mediaIndex[itemMedia] = media[itemMedia].length;  
+								loadImage(image,media[itemData][mediaIndex[itemData]]);
 							}
 						}
 						
 						var query = "SELECT * FROM media WHERE diary_id=?";
 						
 						console.log(query,[diaryId[itemData]]);
-						tx.executeSql(query, [diaryId[itemData]], successMedia, errorCB);
+						tx.executeSql(query, [diaryId[itemData]], successMedia, StatementErrorCallback);
 					}
 					
-					db.transaction(queryMedia, errorCB);
+					db.transaction(queryMedia, TransactionErrorCallback);
 				});
 				console.log('successRecords','end');
 			}
@@ -674,10 +704,10 @@ function queryDiary(db) {
 			var query = "SELECT * FROM diary WHERE cuisine_datetime BETWEEN ? AND ? ORDER BY cuisine_datetime DESC";
 			
 			console.log(query,[diary_from_datetime,diary_to_datetime+24*60*60*1000]);
-			tx.executeSql(query, [diary_from_datetime,diary_to_datetime+24*60*60*1000], successRecords, errorCB);
+			tx.executeSql(query, [diary_from_datetime,diary_to_datetime+24*60*60*1000], successRecords, StatementErrorCallback);
 		}
 					
-		db.transaction(queryRecords, errorCB);
+		db.transaction(queryRecords, TransactionErrorCallback);
 		
 	} catch (e) {
 		console.log("error",e);
@@ -697,11 +727,11 @@ function deletePlanner(db,item,callback) {
 	}
 		
 	var queryDelete = function (tx) {
-		tx.executeSql("DELETE FROM planner_cuisines WHERE planner_id=?",[plannerId[itemData]], successDelete, errorCB);
-		tx.executeSql("DELETE FROM planner WHERE planner_id=?",[plannerId[itemData]], successDelete, errorCB);
+		tx.executeSql("DELETE FROM planner_cuisines WHERE planner_id=?",[plannerId[itemData]], successDelete, StatementErrorCallback);
+		tx.executeSql("DELETE FROM planner WHERE planner_id=?",[plannerId[itemData]], successDelete, StatementErrorCallback);
 	}
 	
-	db.transaction(queryDelete, errorCB);
+	db.transaction(queryDelete, TransactionErrorCallback);
 
 	console.log('deletePlanner','end');
 }
@@ -730,10 +760,10 @@ function savePlannerCuisines(db,item,callback) {
 			var query =	"INSERT INTO planner_cuisines(planner_id,cuisine_id) VALUES (?,?)";
 				
 			console.log(query,[plannerId[itemData],cuisine_id]);
-			tx.executeSql(query,[plannerId[itemData],cuisine_id], successInsert, errorCB);
+			tx.executeSql(query,[plannerId[itemData],cuisine_id], successInsert, StatementErrorCallback);
 		}
 		
-		db.transaction(queryInsert, errorCB);
+		db.transaction(queryInsert, TransactionErrorCallback);
 	});
 	console.log('savePlannerCuisines','end');
 }
@@ -765,10 +795,10 @@ function savePlanner(db,item,callback) {
 			var query =	"INSERT INTO planner(cuisine_datetime) VALUES (?)";
 			
 			console.log(query,[datetime]);
-			tx.executeSql(query,[datetime], successInsert, errorCB);
+			tx.executeSql(query,[datetime], successInsert, StatementErrorCallback);
 		}
 		
-		db.transaction(queryInsert, errorCB);
+		db.transaction(queryInsert, TransactionErrorCallback);
 	} else {
 		var queryUpdate = function (tx) {
 			
@@ -781,10 +811,10 @@ function savePlanner(db,item,callback) {
 			
 			var query =	"UPDATE planner SET cuisine_datetime=? WHERE planner_id=?";
 			console.log(query,[datetime,plannerId[itemData]]);
-			tx.executeSql(query,[datetime,plannerId[itemData]], successUpdate, errorCB);
+			tx.executeSql(query,[datetime,plannerId[itemData]], successUpdate, StatementErrorCallback);
 		}
 		
-		db.transaction(queryUpdate, errorCB);
+		db.transaction(queryUpdate, TransactionErrorCallback);
 
 		var queryDeleteCuisines = function (tx) {
 
@@ -797,10 +827,10 @@ function savePlanner(db,item,callback) {
 				
 			var query =	"DELETE FROM planner_cuisines WHERE planner_id=?";
 			console.log(query,[plannerId[itemData]]);
-			tx.executeSql(query,[plannerId[itemData]], successDeleteCuisines, errorCB);
+			tx.executeSql(query,[plannerId[itemData]], successDeleteCuisines, StatementErrorCallback);
 		}
 		
-		db.transaction(queryDeleteCuisines, errorCB);
+		db.transaction(queryDeleteCuisines, TransactionErrorCallback);
 	}
 		
 	console.log('savePlanner','end');
@@ -845,10 +875,10 @@ function queryPlanner(db) {
 					var query = "SELECT cuisines.cuisine_id,cuisine_type_id FROM planner_cuisines JOIN cuisines ON planner_cuisines.cuisine_id=cuisines.cuisine_id WHERE planner_id=?";
 					
 					console.log(query,[plannerId[itemData]]);
-					tx.executeSql(query, [plannerId[itemData]], successCuisines, errorCB);
+					tx.executeSql(query, [plannerId[itemData]], successCuisines, StatementErrorCallback);
 				}
 				
-				db.transaction(queryCuisines, errorCB);
+				db.transaction(queryCuisines, TransactionErrorCallback);
 			});
 			console.log('successRecords','end');
 		}
@@ -858,10 +888,10 @@ function queryPlanner(db) {
 		var query = "SELECT * FROM planner WHERE cuisine_datetime BETWEEN ? AND ? ORDER BY cuisine_datetime ASC";
 		
 		console.log(query,[planner_from_datetime,planner_to_datetime+24*60*60*1000]);
-		tx.executeSql(query, [planner_from_datetime,planner_to_datetime+24*60*60*1000], successRecords, errorCB);
+		tx.executeSql(query, [planner_from_datetime,planner_to_datetime+24*60*60*1000], successRecords, StatementErrorCallback);
 	}
 	
-	db.transaction(queryRecords, errorCB);
+	db.transaction(queryRecords, TransactionErrorCallback);
 
 	console.log('queryPlanner','end');
 }
@@ -878,13 +908,13 @@ function deleteCuisine(db,item,callback) {
 	}
 	
 	var queryDelete = function (tx) {
-		tx.executeSql("DELETE FROM cuisine_products WHERE cuisine_id=?",[cuisineId[itemData]], successDelete, errorCB);
-		tx.executeSql("DELETE FROM planner_cuisines WHERE cuisine_id=?",[cuisineId[itemData]], successDelete, errorCB);
-		tx.executeSql("DELETE FROM diary_cuisines WHERE cuisine_id=?",[cuisineId[itemData]], successDelete, errorCB);
-		tx.executeSql("DELETE FROM cuisines WHERE cuisine_id=?",[cuisineId[itemData]], successDelete, errorCB);
+		tx.executeSql("DELETE FROM cuisine_products WHERE cuisine_id=?",[cuisineId[itemData]], successDelete, StatementErrorCallback);
+		tx.executeSql("DELETE FROM planner_cuisines WHERE cuisine_id=?",[cuisineId[itemData]], successDelete, StatementErrorCallback);
+		tx.executeSql("DELETE FROM diary_cuisines WHERE cuisine_id=?",[cuisineId[itemData]], successDelete, StatementErrorCallback);
+		tx.executeSql("DELETE FROM cuisines WHERE cuisine_id=?",[cuisineId[itemData]], successDelete, StatementErrorCallback);
 	}
 	
-	db.transaction(queryDelete, errorCB);
+	db.transaction(queryDelete, TransactionErrorCallback);
 
 	console.log('deleteCuisine','end');
 }
@@ -915,10 +945,10 @@ function saveCuisineProducts(db,item,callback) {
 			var query = "INSERT INTO cuisine_products(cuisine_id,product_id,cuisine_product_qty) VALUES (?,?,?)";
 			
 			console.log(query,[cuisineId[itemData],product_id,cuisine_product_qty]);
-			tx.executeSql(query,[cuisineId[itemData],product_id,cuisine_product_qty], successInsert, errorCB);
+			tx.executeSql(query,[cuisineId[itemData],product_id,cuisine_product_qty], successInsert, StatementErrorCallback);
 		}
 		
-		db.transaction(queryInsert, errorCB);
+		db.transaction(queryInsert, TransactionErrorCallback);
 	});
 	console.log('saveCuisineProducts','end');
 }
@@ -951,10 +981,10 @@ function saveCuisine(db,item,callback) {
 			var query = "INSERT INTO cuisines(cuisine_title,cuisine_type_id) VALUES (?,?)";
 				
 			console.log(query,[title,typeId]);
-			tx.executeSql(query,[title,typeId], successInsert, errorCB);
+			tx.executeSql(query,[title,typeId], successInsert, StatementErrorCallback);
 		}
 		
-		db.transaction(queryInsert, errorCB);
+		db.transaction(queryInsert, TransactionErrorCallback);
 	} else {
 		var queryUpdate = function (tx) {
 			var successUpdate = function (tx, results) {
@@ -966,10 +996,10 @@ function saveCuisine(db,item,callback) {
 			
 			var query = "UPDATE cuisines SET cuisine_title=?,cuisine_type_id=? WHERE cuisine_id=?";
 			console.log(query,[title,typeId,cuisineId[itemData]]);
-			tx.executeSql(query,[title,typeId,cuisineId[itemData]], successUpdate, errorCB);
+			tx.executeSql(query,[title,typeId,cuisineId[itemData]], successUpdate, StatementErrorCallback);
 		}
 		
-		db.transaction(queryUpdate, errorCB);
+		db.transaction(queryUpdate, TransactionErrorCallback);
 		
 		var queryDeleteProducts = function (tx) {
 			var successDeleteProducts = function (tx, results) {
@@ -981,10 +1011,10 @@ function saveCuisine(db,item,callback) {
 
 			var query = "DELETE FROM cuisine_products WHERE cuisine_id=?";
 			console.log(query,[cuisineId[itemData]]);
-			tx.executeSql(query,[cuisineId[itemData]], successDeleteProducts, errorCB);				
+			tx.executeSql(query,[cuisineId[itemData]], successDeleteProducts, StatementErrorCallback);				
 		}
 		
-		db.transaction(queryDeleteProducts, errorCB);
+		db.transaction(queryDeleteProducts, TransactionErrorCallback);
 	}
 
 	console.log('saveCuisine','end');
@@ -1032,10 +1062,10 @@ function queryCuisines(db) {
 					var query =	"SELECT * FROM cuisine_products WHERE cuisine_id=?";
 					
 					console.log(query,[cuisineId[itemData]]);
-					tx.executeSql(query, [cuisineId[itemData]], successSelect, errorCB);
+					tx.executeSql(query, [cuisineId[itemData]], successSelect, StatementErrorCallback);
 				}
 				
-				db.transaction(querySelect, errorCB);	
+				db.transaction(querySelect, TransactionErrorCallback);	
 			});
 
 			console.log('successSelect','end');
@@ -1044,10 +1074,10 @@ function queryCuisines(db) {
 		var query =	"SELECT * FROM cuisines";	
 		
 		console.log(query,[]);
-		tx.executeSql(query, [], successSelect, errorCB);
+		tx.executeSql(query, [], successSelect, StatementErrorCallback);
 	}
 	
-	db.transaction(querySelect, errorCB);
+	db.transaction(querySelect, TransactionErrorCallback);
 		
 	console.log('queryCuisines','end');
 }
@@ -1071,10 +1101,10 @@ function queryLimits(db) {
 		var query = "SELECT * FROM diet";
 		
 		console.log(query,[]);
-		tx.executeSql(query, [], successSelect, errorCB);
+		tx.executeSql(query, [], successSelect, StatementErrorCallback);
 	}
 	
-	db.transaction(querySelect, errorCB);
+	db.transaction(querySelect, TransactionErrorCallback);
 		
 	console.log('queryLimits','end');
 }
@@ -1110,19 +1140,19 @@ function saveLimits(db,callback) {
 					var query = "INSERT INTO diet(product_id,product_qty,product_period_id) VALUES (?,?,?)";
 					
 					console.log(query,[id,qty,period]);
-					tx.executeSql(query,[id,qty,period], successInsert, errorCB);
+					tx.executeSql(query,[id,qty,period], successInsert, StatementErrorCallback);
 				}
 				
-				db.transaction(queryInsert, errorCB);
+				db.transaction(queryInsert, TransactionErrorCallback);
 			});
 		}
 		
 		var query = "DELETE FROM diet";
 		console.log(query,[]);
-		tx.executeSql(query, [], successDelete, errorCB);
+		tx.executeSql(query, [], successDelete, StatementErrorCallback);
 	}
 	
-	db.transaction(queryDelete, errorCB);
+	db.transaction(queryDelete, TransactionErrorCallback);
 	
 		
 	console.log('saveLimits','end');
@@ -1180,10 +1210,10 @@ function queryForecast(db) {
 		+" GROUP BY cuisine_products.product_id";
 		
 		console.log(query,[datetime,datetime+24*60*60*1000,datetime,datetime+24*60*60*1000]);
-		tx.executeSql(query,[datetime,datetime+24*60*60*1000,datetime,datetime+24*60*60*1000], successSelect, errorCB);
+		tx.executeSql(query,[datetime,datetime+24*60*60*1000,datetime,datetime+24*60*60*1000], successSelect, StatementErrorCallback);
 	}
 	
-	db.transaction(querySelect, errorCB);
+	db.transaction(querySelect, TransactionErrorCallback);
 	
 	console.log('queryForecast','end');
 }
@@ -1236,10 +1266,10 @@ function queryAvailable(db) {
 						var id = product_id.pop();
 						var qty = product_qty.pop();
 						console.log(query,[id,qty]);
-						tx.executeSql(query, [id,qty], successSelectCuisine, errorCB);
+						tx.executeSql(query, [id,qty], successSelectCuisine, StatementErrorCallback);
 					}
 					
-					db.transaction(querySelectCuisine, errorCB);
+					db.transaction(querySelectCuisine, TransactionErrorCallback);
 				} else {
 					var querySelectAvailable = function (tx) {
 						
@@ -1264,9 +1294,9 @@ function queryAvailable(db) {
 						+" WHERE cuisine_id IN("+cuisine_id.join(",")+")";
 						
 						console.log(query,[]);
-						tx.executeSql(query, [], successSelectAvailable, errorCB);
+						tx.executeSql(query, [], successSelectAvailable, StatementErrorCallback);
 					}
-					db.transaction(querySelectAvailable, errorCB);
+					db.transaction(querySelectAvailable, TransactionErrorCallback);
 				}
 				console.log('successSelectCuisine','end');
 			}
@@ -1276,10 +1306,10 @@ function queryAvailable(db) {
 				var query = "SELECT cuisine_id FROM cuisines";
 				
 				console.log(query,[]);
-				tx.executeSql(query, [], successSelectCuisine, errorCB);
+				tx.executeSql(query, [], successSelectCuisine, StatementErrorCallback);
 			}
 			
-			db.transaction(querySelectCuisine, errorCB);
+			db.transaction(querySelectCuisine, TransactionErrorCallback);
 			
 			console.log('successSelect','end');
 		}
@@ -1303,10 +1333,10 @@ function queryAvailable(db) {
 		+" GROUP BY cuisine_products.product_id";
 		
 		console.log(query,[datetime,datetime+24*60*60*1000,datetime,datetime+24*60*60*1000]);
-		tx.executeSql(query,[datetime,datetime+24*60*60*1000,datetime,datetime+24*60*60*1000], successSelect, errorCB);
+		tx.executeSql(query,[datetime,datetime+24*60*60*1000,datetime,datetime+24*60*60*1000], successSelect, StatementErrorCallback);
 	}
 	
-	db.transaction(querySelect, errorCB);
+	db.transaction(querySelect, TransactionErrorCallback);
 		
 	console.log('queryAvailable','end');
 }
@@ -1344,9 +1374,9 @@ function querySameCuisines(db,item,cuisineTypeId) {
 		var query = "SELECT * FROM cuisines WHERE cuisine_type_id=?";
 		
 		console.log(query,[cuisineTypeId]);
-		tx.executeSql(query, [cuisineTypeId], successSame, errorCB);
+		tx.executeSql(query, [cuisineTypeId], successSame, StatementErrorCallback);
 	}
-	db.transaction(querySame, errorCB);
+	db.transaction(querySame, TransactionErrorCallback);
 
 	console.log('querySameCuisines','end');
 }
@@ -1745,14 +1775,18 @@ function fail(error) {
 	console.log('Fail',error);
 	navigator.notification.alert('Error code: ' + error.code, null, 'Fail');
 }
-function errorCB(tx,error) {
-	console.log('Database Error',error);
-	navigator.notification.alert('Error code: ' + error.code, null, 'Database Error');
+ 
+function TransactionErrorCallback(error) {
+	console.log('TransactionErrorCallback',error);
+	navigator.notification.alert(error.message+'('+error.code+')', null, 'Database Error');
 }
-function successCB(tx, results) {
-	console.log('successCB',results);
+function StatementErrorCallback(tx,error) {
+	console.log('StatementErrorCallback',error);
+	navigator.notification.alert(error.message+'('+error.code+')', null, 'Database Error');
 }
-			
+function StatementCallback(tx, results) {
+	console.log('StatementCallback',results);
+}
 
 // Wait for Cordova to load
 //
@@ -1762,7 +1796,11 @@ document.addEventListener("deviceready", onDeviceReady, false);
 //
 function onDeviceReady() {
 	console.log('deviceready');
-	deviceReadyDeferred.resolve();
+	var db = getDatabase();
+	console.log("db.version",db.version);
+	createDatabase(db, function(db) {
+		deviceReadyDeferred.resolve();
+	});
 	document.addEventListener("backbutton", handleBackButton, false);
 }
 
