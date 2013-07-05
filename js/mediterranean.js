@@ -135,7 +135,7 @@ function createDatabase(db,callback) {
 				tx.executeSql("DELETE FROM cuisine_types",[],successDeleteCuisineTypes,StatementErrorCallback);
 
 				var successCountDiet = function	(tx,results) {
-					if (results.count != products.length) {
+					if (results.rows.length != products.length) {
 						var successDeleteDiet = function(tx,results) {
 							products.forEach(function(value,index) {
 								var successInsert = function (tx,results) {
@@ -154,7 +154,7 @@ function createDatabase(db,callback) {
 						dietReadyDeferred.resolve();
 					}
 				}
-				tx.executeSql("SELECT COUNT(*) AS count FROM diet",[],successCountDiet,StatementErrorCallback);		
+				tx.executeSql("SELECT * FROM diet",[],successCountDiet,StatementErrorCallback);		
 			}
 		}
 		
@@ -313,7 +313,9 @@ function addItem(table) {
 
 	page.on("vclick", "img", function(event) {
 		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-		$(this).toggleFullScreen();
+		$("#fullScreen img").attr("src",$(this).attr("src"));
+		$.mobile.changePage("#fullScreen");
+//		$(this).toggleFullScreen();
 	});
 	page.on("vclick", ".prev-image", function(event) {
 		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
@@ -1290,7 +1292,7 @@ function queryStatus(table,db,id) {
 	var item = $("."+table+"-item#"+id);
 	var itemData = item.jqmData("data");
 	
-	var datetime = Date.parse($("#cuisine-date",page).val());
+	var datetime = Date.parse($("#cuisine-datetime",page).val());
 
 	var other;
 	switch(table) {
