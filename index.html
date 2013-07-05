@@ -7,7 +7,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <title>Средиземноморская диета</title>
   <link rel="stylesheet" href="css/jquery.mobile.css">
-  
+
+  <link rel="stylesheet" href="css/font-awesome.min.css">  
+
   <!-- Extra Codiqa features -->
   <link rel="stylesheet" href="css/codiqa.ext.css">
   <link rel="stylesheet" href="css/mediterranean.css">
@@ -40,444 +42,349 @@
 </head>
 <body>
 <!-- Home -->
+<li class="item-template" data-theme="c">
+    <a id="page-link">
+        <img id="item-image" src="images/image.png" />
+        <h3 id="item-title">
+            ...
+        </h3>
+        <p id="item-desc" class="ui-li-desc">...</p>
+        <p id="item-status" class="ui-li-count"><i class="icon-question-sign"></i></p>
+    </a>
+</li>
+
+
 <div data-role="page" id="main" data-dom-cache="true">
-    <div data-theme="b" data-role="header">
+    <div data-theme="b" data-role="header" class="header-template">
        <div data-role="navbar">
             <ul>
-                <li><a href="#" class="planner-link">Планы</a></li>
-                <li><a href="#" class="available-link">Доступно</a></li>
-                <li><a href="#" class="diary-link">Дневник</a></li>
+                <li><a href="#planner"><i class="icon-calendar"></i></a></li>
+                <li><a href="#available"><i class="icon-ok-sign"></i></a></li>
+                <li><a href="#diary"><i class="icon-book"></i></a></li>
             </ul>
             <ul>
-                <li><a href="#" class="cuisines-link">Блюда</a></li>
-                <li><a href="#" class="forecast-link">Прогноз</a></li>
-                <li><a href="#" class="limits-link">Диета</a></li>
+                <li><a href="#cuisine"><i class="icon-food"></i></a></li>
+                <li><a href="#forecast"><i class="icon-filter"></i></a></li>
+                <li><a href="#diet"><i class="icon-globe"></i></a></li>
             </ul>
         </div><!-- /navbar -->
     </div>
     <div data-role="content">
-    	<div id="limits">
- 			<div class="limit-product-template">
-                <div class="limit-product-id ui-grid-a">
-                	<div class="ui-block-a">
-						<label id="limit-product-id" for="limit-product-id-qty">Product Title</label>
-                    </div>
-                    <div class="ui-block-b">
-                        <fieldset data-role="controlgroup" data-type="horizontal">
-                            <label for="limit-product-id-qty">
-                                Раз
-                            </label>
-                            <select name="limit-product-id-qty" id="limit-product-id-qty" data-role="none" data-mini="true">
-                            </select>
-                            <label for="limit-product-id-period">
-                                В
-                            </label>
-                            <select name="limit-product-id-period" id="limit-product-id-period" data-role="none" data-mini="true">
-                            </select>
-                        </fieldset>
-                    </div>
-                </div>
-            </div>
+    </div>
+    <div data-theme="b" data-role="footer" data-position="fixed">
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#about"><i class="icon-info-sign"></i></a></li>
+                <li><a href="#help"><i class="icon-question-sign"></i></a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div>
+</div>
 
-            <div class="limit-products">
-            </div>
-
-            <div data-role="controlgroup">
-                <a data-role="button" href="#" data-icon="refresh" data-iconpos="left"
-                class="refresh">
-                    По-умолчанию
+<div data-role="page" id="forecast" data-dom-cache="true">
+    <div data-role="content">
+        <div class="filter">
+            <label for="forecast-date">
+                Дата
+            </label>
+            <input name="forecast-date" id="forecast-date" placeholder="" value="" type="date">
+            <div data-role="controlgroup" data-type="horizontal">
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="today">
+                    +0
                 </a>
-                <a data-role="button" href="#" data-icon="check" data-iconpos="left"
-                class="save">
-                    Сохранить
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="tomorrow">
+                    +1
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="day-after-tomorrow">
+                    +2
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="next-week">
+                    +7
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true"
+                class="custom">
+                    =
                 </a>
             </div>
         </div>
         
+        <div class="forecast-product-template">
+            <div class="forecast-product-id ui-grid-a">
+                <div class="ui-block-a">
+                    <label for="forecast-product-id">
+                        Product Title
+                    </label>
+                </div>
+                <div class="ui-block-b">
+                    <input name="forecast-product-id" id="forecast-product-id" value="" type="range" data-role="none" data-highlight="true" data-mini="true" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div id="forecast-product">
+        </div>           
+    </div>
+    <div data-theme="b" data-role="footer" data-position="fixed">
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#about"><i class="icon-info-sign"></i></a></li>
+                <li><a href="#help"><i class="icon-question-sign"></i></a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div>
+</div>
+
+<div data-role="page" id="available" data-dom-cache="true">
+    <div data-role="content">
+        <div class="filter">
+            <label for="available-date">
+                Дата
+            </label>
+            <input name="available-date" id="available-date" placeholder="" value="" type="date">
+            <div data-role="controlgroup" data-type="horizontal">
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="today">
+                    +0
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="tomorrow">
+                    +1
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="day-after-tomorrow">
+                    +2
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="next-week">
+                    +7
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true"
+                class="custom">
+                    =
+                </a>
+            </div>
+        </div>
         
-    	<div id="forecast">
-            <div class="filter">
-                <label for="forecast-date">
-                    Дата
+        <div class="available-cuisine-template">
+            <div data-role="fieldcontain" class="forecast-product-id">
+                <label for="available-cuisine-id">
+                    Cuisine Title
                 </label>
-                <input name="forecast-date" id="forecast-date" placeholder="" value="" type="date">
-                <div data-role="controlgroup" data-type="horizontal">
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="today">
-                        +0
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="tomorrow">
-                        +1
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="day-after-tomorrow">
-                        +2
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="next-week">
-                        +7
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true"
-                    class="custom">
-                        =
-                    </a>
-                </div>
-			</div>
-            
-			<div class="forecast-product-template">
-                <div class="forecast-product-id ui-grid-a">
-                	<div class="ui-block-a">
-                        <label for="forecast-product-id">
-                            Product Title
-                        </label>
-                    </div>
-                    <div class="ui-block-b">
-                        <input name="forecast-product-id" id="forecast-product-id" value="" type="range" data-role="none" data-highlight="true" data-mini="true" readonly>
-                    </div>
-                </div>
+                <input name="available-cuisine-id" id="available-cuisine-id" placeholder="" value="" data-role="none" type="checkbox">
             </div>
-
-            <div class="forecast-products">
-            </div>           
         </div>
+
+        <a data-role="button" data-theme="b" href="#" data-icon="plus" data-iconpos="left"
+        class="plan">
+            Запланировать
+        </a>
         
-    	<div id="available">
-            <div class="filter">
-                <label for="available-date">
-                    Дата
-                </label>
-                <input name="available-date" id="available-date" placeholder="" value="" type="date">
-                <div data-role="controlgroup" data-type="horizontal">
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="today">
-                        +0
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="tomorrow">
-                        +1
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="day-after-tomorrow">
-                        +2
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="next-week">
-                        +7
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true"
-                    class="custom">
-                        =
-                    </a>
-                </div>
-			</div>
-            
-			<div class="available-cuisine-template">
-                <div data-role="fieldcontain" class="forecast-product-id">
-                    <label for="available-cuisine-id">
-                        Cuisine Title
+        <fieldset id="available-cuisine" data-role="controlgroup">
+        </fieldset>           
+    </div>
+    <div data-theme="b" data-role="footer" data-position="fixed">
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#about"><i class="icon-info-sign"></i></a></li>
+                <li><a href="#help"><i class="icon-question-sign"></i></a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div>
+</div>
+
+<div data-role="page" id="diary" data-dom-cache="true">
+    <div data-role="content">
+        <div class="filter">
+            <div class="ui-grid-a">
+                <div class="ui-block-a">
+                    <label for="diary-from-date">
+                        C
                     </label>
-                    <input name="available-cuisine-id" id="available-cuisine-id" placeholder="" value="" data-role="none" type="checkbox">
+                    <input name="diary-from-date" id="diary-from-date" placeholder="" value="" type="date">
                 </div>
-            </div>
-
-            <a data-role="button" data-theme="b" href="#" data-icon="plus" data-iconpos="left"
-            class="plan">
-                Запланировать
-            </a>
-            
-           	<fieldset class="available-cuisines" data-role="controlgroup">
-            </fieldset>           
-        </div>
-        
-        
-    	<div id="diary">
-        	<div class="filter">
-                <div class="ui-grid-a">
-                	<div class="ui-block-a">
-                        <label for="diary-from-date">
-                            C
-                        </label>
-                        <input name="diary-from-date" id="diary-from-date" placeholder="" value="" type="date">
-                    </div>
- 					<div class="ui-block-b">                
-                        <label for="diary-to-date">
-                            По
-                        </label>
-                        <input name="diary-to-date" id="diary-to-date" placeholder="" value="" type="date">
-                    </div>
-           		</div>
-                <div data-role="controlgroup" data-type="horizontal">
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="today">
-                        -0
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="yesterday">
-                        -1
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="day-before-yesterday">
-                        -2
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="prev-week">
-                        -7
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true"
-                    class="custom">
-                        =
-                    </a>
-                </div>
-             </div>
-
-            <a data-role="button" data-theme="b" href="#" data-icon="plus" data-iconpos="left"
-            class="add">
-                Добавить
-            </a>
-
-            <div class="diary-item-cuisine-template">
-                <fieldset data-role="controlgroup" data-type="horizontal">
-                    <select name="" class="cuisine-type" data-role="none" data-mini="true">
-                    	<option data-placeholder="true">Тип блюда</option>
-                    </select>
-                    <select name="" class="diary-cuisine" data-role="none" data-mini="true" required>
-                    	<option data-placeholder="true">Блюдо</option>
-                    </select>
-                    <a data-role="button" href="#" data-icon="delete" data-iconpos="right" data-mini="true"
-                    class="delete-cuisine">
-                        &nbsp;
-                    </a>
-                </fieldset>
-            </div>
-
-            <form class="diary-item-template">
-                <h3 id="diary-item-title">
-                    Новый
-                </h3>
-                <div data-role="fieldcontain" class="cuisine-datetime">
-                    <label for="cuisine-datetime">
-                        Дата и время
+                <div class="ui-block-b">                
+                    <label for="diary-to-date">
+                        По
                     </label>
-                    <input name="cuisine-datetime" id="cuisine-datetime" placeholder="" value="" data-role="none" type="datetime-local" required>
-                </div>
-                <div class="cuisine-image">
-                    <img src="images/image.png" alt="image" height="100%">
-                </div>
-                <div data-role="controlgroup" data-type="horizontal">
-                    <a data-role="button" href="#" data-icon="arrow-l" data-iconpos="left" data-inline="true" data-mini="true"
-                    class="prev-image">
-                        &nbsp;
-                    </a>
-                    <a data-role="button" href="#" data-icon="arrow-r" data-iconpos="right" data-inline="true" data-mini="true"
-                    class="next-image">
-                        &nbsp;
-                    </a>
-				</div>
-                
-				<div class="diary-item-cuisines">
-                </div>
-
-                <div data-role="controlgroup">
-                    <a data-role="button" href="#" data-icon="plus" data-iconpos="left"
-                    class="add-cuisine">
-                        Добавить блюдо
-                    </a>
-    
-                    <a data-role="button" href="#" data-icon="star" data-iconpos="left"
-                    class="take-photo">
-                        Сфотографировать
-                    </a>
-                    <a data-role="button" href="#" data-icon="check" data-iconpos="left"
-                    class="save">
-                        Сохранить
-                    </a>
-                    <a data-role="button" href="#" data-icon="delete" data-iconpos="left"
-                    class="delete">
-                        Стереть
-                    </a>
-                </div>
-            </form>
-    
-            <div data-role="collapsible-set" class="diary-items">
-            </div>
-        </div>
-
-    	<div id="planner">
-        	<div class="filter">
-                <div class="ui-grid-a">
-                	<div class="ui-block-a">
-                        <label for="planner-from-date">
-                            C
-                        </label>
-                        <input name="" id="planner-from-date" placeholder="" value="" type="date">
-                    </div>
- 					<div class="ui-block-b">                
-                        <label for="planner-to-date">
-                            По
-                        </label>
-                        <input name="" id="planner-to-date" placeholder="" value="" type="date">
-                    </div>
-           		</div>
-                <div data-role="controlgroup" data-type="horizontal">
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="today">
-                        +0
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="tomorrow">
-                        +1
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="day-after-tomorrow">
-                        +2
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
-                    class="next-week">
-                        +7
-                    </a>
-                    <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true"
-                    class="custom">
-                        =
-                    </a>
-                </div>
-             </div>
-
-            <a data-role="button" data-theme="b" href="#" data-icon="plus" data-iconpos="left"
-            class="add">
-                Добавить
-            </a>
-
-            <div class="planner-item-cuisine-template">
-                <fieldset data-role="controlgroup" data-type="horizontal">
-                    <select name="" class="cuisine-type" data-role="none" data-mini="true">
-                    	<option data-placeholder="true">Тип блюда</option>
-                    </select>
-                    <select name="" class="planner-cuisine" data-role="none" data-mini="true" required>
-                    	<option data-placeholder="true">Блюдо</option>
-                    </select>
-                    <a data-role="button" href="#" data-icon="delete" data-iconpos="right" data-mini="true"
-                    class="delete-cuisine">
-                        &nbsp;
-                    </a>
-                </fieldset>
-            </div>
-
-            <form class="planner-item-template">
-                <h3 id="planner-item-title">
-                    Новый
-                </h3>
-                
-                <div data-role="fieldcontain" class="cuisine-datetime">
-                    <label for="cuisine-datetime">
-                        Дата и время
-                    </label>
-                    <input name="cuisine-datetime" id="cuisine-datetime" placeholder="" value="" data-role="none" type="datetime-local" required>
-                </div>
-                
-				<div class="planner-item-cuisines">
-                </div>
-
-                <div data-role="controlgroup">
-                    <a data-role="button" href="#" data-icon="plus" data-iconpos="left"
-                    class="add-cuisine">
-                        Добавить блюдо
-                    </a>
-    
-                    <a data-role="button" href="#" data-icon="check" data-iconpos="left"
-                    class="save">
-                        Сохранить
-                    </a>
-                    
-                    <a data-role="button" href="#" data-icon="gear" data-iconpos="left"
-                    class="release">
-                        Исполнить
-                    </a>
-                    
-                    <a data-role="button" href="#" data-icon="delete" data-iconpos="left"
-                    class="delete">
-                        Стереть
-                    </a>
-                </div>
-            </form>
-    
-            <div data-role="collapsible-set" class="planner-items">
-            </div>
-        </div>
-
-
-    	<div id="cuisines">
-
-            <a data-role="button" data-theme="b" href="#" data-icon="plus" data-iconpos="left"
-            class="add">
-                Добавить
-            </a>
-
-            <div class="cuisine-item-product-template">
-                <div class="cuisine-product-id ui-grid-a">
-                    <div class="ui-block-a">
-                        <label for="cuisine-product-id">
-                            Product Title
-                        </label>
-	                </div>
-                 	<div class="ui-block-b">
-                        <select name="cuisine-product-id" id="cuisine-product-id" class="cuisine-product" data-role="none" data-mini="true">
-                            <option value="0">Нет</option>
-                            <option value="1">Да</option>
-                        </select>
-                    </div>
+                    <input name="diary-to-date" id="diary-to-date" placeholder="" value="" type="date">
                 </div>
             </div>
-
-            <form class="cuisine-item-template">
-                <h3 id="cuisine-item-title">
-                    Новый
-                </h3>
-                <div data-role="fieldcontain" class="cuisine-datetime">
-                    <label for="cuisine-title">
-                        Название блюда
-                    </label>
-                    <input name="cuisine-title" id="cuisine-title" placeholder="" value="" data-role="none" type="text" required>
-                </div>
-                <div data-role="fieldcontain" class="cuisine-type">
-                    <select name="cuisine-type" id="cuisine-type" class="cuisine-type" data-role="none" data-mini="true">
-                    	<option data-placeholder="true">Тип блюда</option>
-                    </select>
-                </div>
-
-				<div class="cuisine-item-products">
-                </div>
-
-                <div data-role="controlgroup">
-                    <a data-role="button" href="#" data-icon="check" data-iconpos="left"
-                    class="save">
-                        Сохранить
-                    </a>
-                    <a data-role="button" href="#" data-icon="delete" data-iconpos="left"
-                    class="delete">
-                        Стереть
-                    </a>
-                </div>
-            </form>
-    
-            <div data-role="collapsible-set" class="cuisine-items">
+            <div data-role="controlgroup" data-type="horizontal">
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="today">
+                    -0
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="yesterday">
+                    -1
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="day-before-yesterday">
+                    -2
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="prev-week">
+                    -7
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true"
+                class="custom">
+                    =
+                </a>
             </div>
+         </div>
+
+        <a data-role="button" data-theme="b" href="#" data-icon="plus" data-iconpos="left"
+        class="add">
+            Добавить в дневник
+        </a>
+
+
+        <div data-role="fieldcontain">
+            <ul data-role="listview" data-inset="false" class="diary-items">
+            </ul>
         </div>
     </div>
     <div data-theme="b" data-role="footer" data-position="fixed">
         <div data-role="navbar">
             <ul>
-                <li><a href="#about">О диете</a></li>
-                <li><a href="#help">Помощь</a></li>
+                <li><a href="#about"><i class="icon-info-sign"></i></a></li>
+                <li><a href="#help"><i class="icon-question-sign"></i></a></li>
             </ul>
         </div><!-- /navbar -->
     </div>
 </div>
+
+<div data-role="page" id="planner" data-dom-cache="true">
+    <div data-role="content">
+        <div class="filter">
+            <div class="ui-grid-a">
+                <div class="ui-block-a">
+                    <label for="planner-from-date">
+                        C
+                    </label>
+                    <input name="" id="planner-from-date" placeholder="" value="" type="date">
+                </div>
+                <div class="ui-block-b">                
+                    <label for="planner-to-date">
+                        По
+                    </label>
+                    <input name="" id="planner-to-date" placeholder="" value="" type="date">
+                </div>
+            </div>
+            <div data-role="controlgroup" data-type="horizontal">
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="today">
+                    +0
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="tomorrow">
+                    +1
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="day-after-tomorrow">
+                    +2
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true" 
+                class="next-week">
+                    +7
+                </a>
+                <a data-role="button" data-theme="b" href="#" data-icon="search" data-iconpos="left" data-mini="true"
+                class="custom">
+                    =
+                </a>
+            </div>
+         </div>
+
+        <a data-role="button" data-theme="b" href="#" data-icon="plus" data-iconpos="left"
+        class="add">
+            Добавить в планы
+        </a>
+
+        <div data-role="fieldcontain">
+            <ul data-role="listview" data-inset="false" class="planner-items">
+            </ul>
+        </div>
+    </div>
+    <div data-theme="b" data-role="footer" data-position="fixed">
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#about"><i class="icon-info-sign"></i></a></li>
+                <li><a href="#help"><i class="icon-question-sign"></i></a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div>
+</div>
+
+<div data-role="page" id="cuisine" data-dom-cache="true">
+    <div data-role="content">
+        <a data-role="button" data-theme="b" href="#" data-icon="plus" data-iconpos="left"
+        class="add">
+            Добавить блюдо
+        </a>
+
+        <div data-role="fieldcontain">
+            <ul data-role="listview" data-inset="false" class="cuisine-items">
+            </ul>
+        </div>
+    </div>
+    <div data-theme="b" data-role="footer" data-position="fixed">
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#about"><i class="icon-info-sign"></i></a></li>
+                <li><a href="#help"><i class="icon-question-sign"></i></a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div>
+</div>
+
+<div class="diet-product-template">
+    <div class="diet-product-id ui-grid-a">
+        <div class="ui-block-a">
+            <label id="diet-product-id" for="diet-product-id-qty">Product Title</label>
+        </div>
+        <div class="ui-block-b">
+            <fieldset data-role="controlgroup" data-type="horizontal">
+                <label for="diet-product-id-qty">
+                    Раз
+                </label>
+                <select name="diet-product-id-qty" id="diet-product-id-qty" data-role="none" data-mini="true">
+                </select>
+                <label for="diet-product-id-period">
+                    В
+                </label>
+                <select name="diet-product-id-period" id="diet-product-id-period" data-role="none" data-mini="true">
+                </select>
+            </fieldset>
+        </div>
+    </div>
+</div>
+
+
+<div data-role="page" id="diet">
+	<div data-role="content">
+        <div id="diet-product">
+        </div>
+	</div>
+    
+    <div data-theme="b" data-role="footer" data-position="fixed">
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#" class="refresh"><i class="icon-refresh"></i></a></li>
+                <li><a href="#" class="save"><i class="icon-ok"></i></a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div>
+</div>
+
 <div data-role="page" id="about">
     <div data-theme="b" data-role="header">
        <div data-role="navbar" data-iconpos="left">
             <ul>
-                <li><a href="#main" data-icon="back">Назад</a></li>
+                <li><a href="#" data-rel="back" data-icon="back">Назад</a></li>
            </ul>
 		</div>         
     </div>
@@ -502,7 +409,7 @@
     <div data-theme="b" data-role="header">
        <div data-role="navbar" data-iconpos="left">
             <ul>
-                <li><a href="#main" data-icon="back">Назад</a></li>
+                <li><a href="#" data-rel="back" data-icon="back">Назад</a></li>
            </ul>
 		</div>         
     </div>
@@ -515,5 +422,202 @@
       </ol>
   </div>
 </div>
+
+<div class="diary-cuisine-template">
+    <fieldset data-role="controlgroup" data-type="horizontal">
+        <select name="" class="cuisine-type" data-role="none" data-mini="true">
+            <option data-placeholder="true">Вид блюда</option>
+        </select>
+        <select name="" class="diary-cuisine" data-role="none" data-mini="true" required>
+            <option data-placeholder="true">Блюдо</option>
+        </select>
+        <a data-role="button" href="#" data-mini="true"
+        class="delete-cuisine">
+            <i class="icon-trash"></i>
+        </a>
+    </fieldset>
+</div>
+
+<div class="diary-page-template">
+    <div data-theme="b" data-role="header">
+    	<h2>Дневник</h2>
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#" class="take-photo"><i class="icon-camera"></i></a></li>
+                <li><a href="#">&nbsp;</a></li>
+                <li><a href="#" class="add-cuisine"><i class="icon-plus"></i><i class="icon-food"></i></a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div>
+	<div data-role="content">
+        <form>
+            <div data-role="fieldcontain" class="cuisine-datetime">
+                <label for="cuisine-datetime">
+                    Дата и время
+                </label>
+                <input name="cuisine-datetime" id="cuisine-datetime" placeholder="" value="" data-role="none" type="datetime-local" required>
+            </div>
+            <div class="cuisine-image">
+                <img src="images/image.png" alt="image" height="100%">
+            </div>
+            <div data-role="controlgroup" data-type="horizontal">
+                <a data-role="button" href="#" data-inline="true" data-mini="true"
+                class="prev-image">
+                    <i class="icon-backward"></i>
+                </a>
+                <a data-role="button" href="#" data-inline="true" data-mini="true"
+                class="next-image">
+                    <i class="icon-forward"></i>
+                </a>
+            </div>
+            
+            <div id="diary-cuisine">
+            </div>
+        </form>
+	</div>
+    <div data-theme="b" data-role="footer" data-position="fixed">
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#" class="delete"><i class="icon-trash"></i></a></li>
+                <li><a href="#" class="save"><i class="icon-ok"></i></a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div>
+</div>
+
+<div class="planner-cuisine-template">
+    <fieldset data-role="controlgroup" data-type="horizontal">
+        <select name="" class="cuisine-type" data-role="none" data-mini="true">
+            <option data-placeholder="true">Вид блюда</option>
+        </select>
+        <select name="" class="planner-cuisine" data-role="none" data-mini="true" required>
+            <option data-placeholder="true">Блюдо</option>
+        </select>
+        <a data-role="button" href="#" data-mini="true"
+        class="delete-cuisine">
+            <i class="icon-trash"></i>
+        </a>
+    </fieldset>
+</div>
+
+<div class="planner-page-template">
+    <div data-theme="b" data-role="header">
+    	<h2>План</h2>
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#" class="take-photo"><i class="icon-camera"></i></a></li>
+                <li><a href="#" class="release"><i class="icon-calendar"></i><i class="icon-arrow-right"></i><i class="icon-book"></i></a></li>
+                <li><a href="#" class="add-cuisine"><i class="icon-plus"></i><i class="icon-food"></i></a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div>
+	<div data-role="content">
+        <form>
+            <div data-role="fieldcontain" class="cuisine-datetime">
+                <label for="cuisine-datetime">
+                    Дата и время
+                </label>
+                <input name="cuisine-datetime" id="cuisine-datetime" placeholder="" value="" data-role="none" type="datetime-local" required>
+            </div>
+            
+            <div class="cuisine-image">
+                <img src="images/image.png" alt="image" height="100%">
+            </div>
+            <div data-role="controlgroup" data-type="horizontal">
+                <a data-role="button" href="#" data-inline="true" data-mini="true"
+                class="prev-image">
+                    <i class="icon-backward"></i>
+                </a>
+                <a data-role="button" href="#" data-inline="true" data-mini="true"
+                class="next-image">
+                    <i class="icon-forward"></i>
+                </a>
+            </div>
+
+            <div id="planner-cuisine">
+            </div>
+        </form>
+	</div>
+    <div data-theme="b" data-role="footer" data-position="fixed">
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#" class="delete"><i class="icon-trash"></i></a></li>
+                <li><a href="#" class="save"><i class="icon-ok"></i></a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div>
+</div>
+    
+<div class="cuisine-product-template">
+    <div class="cuisine-product-id ui-grid-a">
+        <div class="ui-block-a">
+            <label for="cuisine-product-id">
+                Product Title
+            </label>
+        </div>
+        <div class="ui-block-b">
+            <select name="cuisine-product-id" id="cuisine-product-id" class="cuisine-product" data-role="none" data-mini="true">
+                <option value="0">Нет</option>
+                <option value="1">Да</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="cuisine-page-template">
+    <div data-theme="b" data-role="header">
+    	<h2>Блюдо</h2>
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#" class="take-photo"><i class="icon-camera"></i></a></li>
+                <li><a href="#">&nbsp;</a></li>
+                <li><a href="#">&nbsp;</a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div>
+	<div data-role="content">
+        <form>
+            <div data-role="fieldcontain" class="cuisine-datetime">
+                <label for="cuisine-title">
+                    Название блюда
+                </label>
+                <input name="cuisine-title" id="cuisine-title" placeholder="" value="" data-role="none" type="text" required>
+            </div>
+
+            <div class="cuisine-image">
+                <img src="images/image.png" alt="image" height="100%">
+            </div>
+            <div data-role="controlgroup" data-type="horizontal">
+                <a data-role="button" href="#" data-inline="true" data-mini="true"
+                class="prev-image">
+                    <i class="icon-backward"></i>
+                </a>
+                <a data-role="button" href="#" data-inline="true" data-mini="true"
+                class="next-image">
+                    <i class="icon-forward"></i>
+                </a>
+            </div>
+
+            <div data-role="fieldcontain" class="cuisine-type">
+                <select name="cuisine-type" id="cuisine-type" class="cuisine-type" data-role="none" data-mini="true">
+                    <option data-placeholder="true">Вид блюда</option>
+                </select>
+            </div>
+
+            <div id="cuisine-product">
+            </div>
+        </form>
+	</div>
+    <div data-theme="b" data-role="footer" data-position="fixed">
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#" class="delete"><i class="icon-trash"></i></a></li>
+                <li><a href="#" class="save"><i class="icon-ok"></i></a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div>
+</div>
+    
+
 </body>
 </html>

@@ -3,15 +3,16 @@
 body {
 	text-align: center;
 }
-.limit-product-template, 
+.diet-product-template, 
 .forecast-product-template, 
-.cuisine-item-product-template, 
-.cuisine-item-template, 
-.planner-item-cuisine-template,
-.planner-item-template,
-.diary-item-cuisine-template,
-.diary-item-template,
-.available-cuisine-template {
+.cuisine-product-template, 
+.cuisine-page-template, 
+.planner-cuisine-template,
+.planner-page-template,
+.diary-cuisine-template,
+.diary-page-template,
+.available-cuisine-template,
+.item-template {
 	display:none;
 }
 
@@ -23,12 +24,12 @@ body {
 	height:120px;
 }
 
-#limits .ui-grid-a .ui-block-a,
-#forecast .ui-grid-a .ui-block-a {
+#diet div[data-role='content'] .ui-grid-a .ui-block-a,
+#forecast div[data-role='content'] .ui-grid-a .ui-block-a {
 	width: 35%; 
 }
-#limits .ui-grid-a .ui-block-b,
-#forecast .ui-grid-a .ui-block-b { 
+#diet div[data-role='content'] .ui-grid-a .ui-block-b,
+#forecast div[data-role='content'] .ui-grid-a .ui-block-b { 
 	width: 65%; 
 } 
 
@@ -36,4 +37,12 @@ div[data-role='page'] {
 	background-image: url(../images/background.jpg);
 	background-repeat: repeat;
 	background-position: center top;
+}
+
+.ui-header .ui-btn-inner, .ui-footer .ui-btn-inner {
+	font-size:18px !important;
+}
+
+.ui-li-count {
+	font-size:18px !important;
 }
