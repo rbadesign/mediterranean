@@ -32,12 +32,12 @@ var cuisineTypes = Array(
 );
 
 var tables = Array(
-	"diet",
-	"forecast",
-	"available",
-	"planner",
-	"diary",
-	"cuisine"
+	{ id:"diet", title:"Диета" },
+	{ id:"forecast", title:"Прогноз" },
+	{ id:"available", title:"Доступно" },
+	{ id:"planner", title:"Планы" },
+	{ id:"diary", title:"Дневник" },
+	{ id:"cuisine", title:"Блюда" }
 );
 
 var itemId = {
@@ -225,7 +225,7 @@ function addItem(table) {
 		var page = $(this).parents("."+table+"-page");
 		var id = page.attr("id");
 		var item = $("."+table+"-item#"+id);
-		setStatus(table,id,"spinner");
+		setStatus(table,id,"time");
 		console.log("vclick",".diary.save,.planner.save",table,id);
 		var itemData = item.jqmData("data");
 		if (page.find("form").valid()) {
@@ -250,7 +250,7 @@ function addItem(table) {
 		var page = $(this).parents("."+table+"-page");
 		var id = page.attr("id");
 		var item = $("."+table+"-item#"+id);
-		setStatus(table,id,"spinner");
+		setStatus(table,id,"time");
 		console.log("vclick",".cuisine-page .save",table,id);
 		var itemData = item.jqmData("data");
 		if (page.find("form").valid()) {
@@ -259,7 +259,7 @@ function addItem(table) {
 			var db = getDatabase();
 			if (itemId[table][itemData]==-1) {
 				saveItem(table,db,id,function(db) {
-					setStatus(table,id,"ok-circle");
+					setStatus(table,id,"dialog-clean");
 					queryDesc(table,db,id);
 					var option = "<option data-placeholder='false' value='"+itemId[table][itemData]+"'>"+title+"</option>";
 					$("select.diary-"+table+",select.planner-"+table+"").append(option);
@@ -268,7 +268,7 @@ function addItem(table) {
 				});
 			} else {
 				saveItem(table,db,id,function(db) {
-					setStatus(table,id,"ok-circle");
+					setStatus(table,id,"dialog-clean");
 					queryDesc(table,db,id);
 					$("select.diary-"+table+" option[value='"+itemId[table][itemData]+"']").text(title);
 					$("select.planner-"+table+" option[value='"+itemId[table][itemData]+"']").text(title);
@@ -286,7 +286,7 @@ function addItem(table) {
 		var page = $(this).parents("."+table+"-page");
 		var id = page.attr("id");
 		var item = $("."+table+"-item#"+id);
-		setStatus(table,id,"remove");
+		setStatus(table,id,"delete");
 		console.log("vclick",".delete",table,id);
 		var itemData = item.jqmData("data");
 		
@@ -296,7 +296,7 @@ function addItem(table) {
 		$.when(pageHideReadyDeferred, pageDeleteReadyDeferred).then(function() {
 			page.remove();
 			item.remove();
-			$("."+table+"-items").listview("refresh");
+			$("."+table+"-items.ui-listview").listview("refresh");
 		});
 
 		$(page).one('pagehide', function(event) {
@@ -311,7 +311,7 @@ function addItem(table) {
 		$.mobile.changePage("#"+table+"");
 	});
 
-	page.on("vclick", "img", function(event) {
+	page.on("vclick", ".cuisine-image img", function(event) {
 		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
 		$("#fullScreen img").attr("src",$(this).attr("src"));
 		$.mobile.changePage("#fullScreen");
@@ -388,7 +388,7 @@ function addItem(table) {
 		var id = page.attr("id");
 		var item = $("."+table+"-item#"+id);
 		var itemData = item.jqmData("data");
-		setStatus(table,id,"remove");
+		setStatus(table,id,"delete");
 		var diary = "diary";
 		var diaryId = addItem(diary);
 		console.log("diaryId",diaryId);
@@ -420,7 +420,7 @@ function addItem(table) {
 		$.when(pageHideReadyDeferred, deleteReadyDeferred).then(function() {
 			page.remove();
 			item.remove();
-			$("."+table+"-items").listview("refresh");
+			$("."+table+"-items.ui-listview").listview("refresh");
 		});
 		$.when(deleteReadyDeferred, saveReadyDeferred).then(function() {
 		});
@@ -435,7 +435,7 @@ function addItem(table) {
 			queryDesc(diary,db,diaryId);
 			saveReadyDeferred.resolve();
 		});
-		$.mobile.changePage($("."+diary+"-page#"+diaryId));
+		$.mobile.changePage("#"+diaryId);
 	});
 	
 	return id;
@@ -863,7 +863,7 @@ function queryItems(table,db,callback) {
 						var page = $("."+table+"-page#"+id);
 						var item = $("."+table+"-item#"+id);
 						var itemData = item.jqmData("data");
-						setStatus(table,id,"spinner");
+						setStatus(table,id,"time");
 						queryStatus(table,db,id);
 						itemId[table][itemData] = results.rows.item(i).id;
 						var datetime = new Date(results.rows.item(i).cuisine_datetime);
@@ -970,7 +970,7 @@ function queryItems(table,db,callback) {
 						var page = $("."+table+"-page#"+id);
 						var item = $("."+table+"-item#"+id);
 						var itemData = item.jqmData("data");
-						setStatus(table,id,"ok-circle");
+						setStatus(table,id,"dialog-clean");
 						itemId[table][itemData] = results.rows.item(i).id;
 						var title = results.rows.item(i).cuisine_title;
 						var type = results.rows.item(i).cuisine_type_id;
@@ -1281,7 +1281,7 @@ function setStatus(table,id,status) {
 	var page = $("."+table+"-page#"+id);
 	var item = $("."+table+"-item#"+id);
 	var itemData = item.jqmData("data");
-	var icon = "<i class='icon-"+status+"'></i>";
+	var icon = "<img src='16x16/"+status+".png'>";
 	item.find("#item-status").children().remove();
 	item.find("#item-status").append(icon);
 }
@@ -1314,11 +1314,11 @@ function queryStatus(table,db,id) {
 			isOk = isOk && (value<=available_qty[indexAvailable]);
 		});
 		if (isOk) {
-			setStatus(table,id,"ok-circle");
+			setStatus(table,id,"dialog-clean");
 		} else {
-			setStatus(table,id,"warning-sign");
+			setStatus(table,id,"dialog-error");
 		}
-		$("."+table+"-items").listview("refresh");
+		$("."+table+"-items.ui-listview").listview("refresh");
 	});
 				
 	var querySelectAvailable = function (tx) {
@@ -1422,7 +1422,7 @@ function queryDesc(table,db,id) {
 			titles.push(results.rows.item(i).title);
 		}
 		item.find("#item-desc").text(titles.join(","));
-		$("."+table+"-items").listview("refresh");
+		$("."+table+"-items.ui-listview").listview("refresh");
 		console.log('successSelect','end');
 	}
 	
@@ -1536,9 +1536,12 @@ $(document).one('pagebeforecreate',function(event){
 		item.find("[data-role='none']").removeAttr("data-role");
 	});
 	
-	tables.forEach(function(table,index) {
+	tables.forEach(function(value,index) {
 		var header = $(".header-template").clone();
-		header.prependTo($("#"+table+"[data-role='page']")).removeClass("header-template");
+		header.find("h2").text(value.title);
+		header.prependTo($("#"+value.id+"[data-role='page']")).removeClass("header-template");
+		console.log("h2",header.find("h2").text());
+		console.log(value.id,value.title);
 	});
 });
 
@@ -1557,12 +1560,22 @@ $.when(deviceReadyDeferred, jqmReadyDeferred).then(function() {
 $(document).one("pageinit",function(event){
 	console.log("pageinit");
 		
-	tables.forEach(function(table,index) {
-		$("#"+table).jqmData("table",table);
-		$("#"+table).find("a").jqmData("table",table);
+	tables.forEach(function(value,index) {
+		$("#"+value.id).jqmData("table",value.id);
+		$("#"+value.id).find("a").jqmData("table",value.id);
 	});
 		
 	jqmReadyDeferred.resolve();
+});
+
+$(document).on("pageinit",'#main',function(event){
+	var table = $(this).jqmData("table");
+	$("#"+table).find("a").jqmData("table",table);
+	$.datepicker.setDefaults( $.datepicker.regional[ "ru" ] );
+	$( "#calendar" ).datepicker({
+		inline: true,
+		autoSize: true,
+	});
 });
 
 $(document).on("pageinit",'#available',function(event){
@@ -1592,7 +1605,7 @@ $(document).on("pageinit",'#available',function(event){
 		});
 		plannerItem.addClass("new");
 		plannerPage.addClass("new");
-		$.mobile.changePage($("."+planner+"-page#"+plannerId));
+		$.mobile.changePage("#"+plannerId);
 	});
 });
 $(document).on("pageinit",'#cuisine',function(event){
@@ -1607,8 +1620,8 @@ $(document).on("pageinit",'#cuisine',function(event){
 		var item = $("."+table+"-item#"+id);
 		item.addClass("new");
 		page.addClass("new");
-		$("."+table+"-items").listview("refresh");
-		$.mobile.changePage($("."+table+"-page#"+id));
+		$("."+table+"-items.ui-listview").listview("refresh");
+		$.mobile.changePage("#"+id);
 	});
 });
 $(document).on("pageinit",'#diary,#planner',function(event){
@@ -1627,24 +1640,23 @@ $(document).on("pageinit",'#diary,#planner',function(event){
 		page.find("#cuisine-datetime").val($.format.date(today,"yyyy-MM-ddTHH:mm"));
 		var cuisine = addItemCuisine(table,id);
 		cuisine.addClass("new");
-		$("#"+table+" ."+table+"-items").listview("refresh");
-		$.mobile.changePage($("."+table+"-page#"+id));
+		$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
+		$.mobile.changePage("#"+id);
 	});
 });
 
-$(document).on("pageshow","#available,#forecast,#diet",function(event){
+$(document).on("pageshow","#available,#forecast",function(event){
 	var table = $(this).jqmData("table");
 	clearItems(table);
+	console.log("pageshow",table);
 	var db = getDatabase();
 	queryItems(table,db,function(db){
 		$("#"+table+" ."+table+"-cuisine").trigger("create");
-		$("#"+table+" ."+table+"-product input").slider("refresh");
+		$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
 		console.log($("#"+table+" ."+table+"-product input"),"refresh");
-		$("#"+table+" ."+table+"-product select").selectmenu("refresh");
-		console.log($("#"+table+" ."+table+"-product select"),"refresh");
 	});
 });
-	
+
 $(document).on("pageshow","#diary,#planner",function(event){
 	var table = $(this).jqmData("table");
 	$("#"+table).jqmData("table",table);
@@ -1653,16 +1665,16 @@ $(document).on("pageshow","#diary,#planner",function(event){
 	$("#"+table+" ."+table+"-item").each(function(index,element) {
 		var elementTable = $(element).jqmData("table");
 		var elementId = $(element).attr("id");
-		setStatus(elementTable,elementId,"spinner");
+		setStatus(elementTable,elementId,"time");
 		queryStatus(elementTable,db,elementId);
 	});
-	$("#"+table+" ."+table+"-items").listview("refresh");
+	$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
 });
 
 $(document).on("pageshow","#cuisine",function(event){
 	var table = $(this).jqmData("table");
 	$("#"+table).jqmData("table",table);
-	$("#"+table+" ."+table+"-items").listview("refresh");
+	$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
 });
 
 $(document).on("pageinit","#diary,#planner",function(event){
@@ -1676,7 +1688,7 @@ $(document).on("pageinit","#diary,#planner",function(event){
 
 	var db = getDatabase();
 	queryItems(table,db,function(db){
-		$("#"+table+" ."+table+"-items").listview("refresh");
+		$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
 	});
 });
 
@@ -1690,162 +1702,164 @@ $(document).on("pageinit","#available,#forecast",function(event){
 	$("#"+table+"-to-date").val($.format.date(today,"yyyy-MM-dd"));
 });
 
-$(document).on("pageinit","#"+tables.join(",#"),function(event){
-	var table = $(this).jqmData("table");
-	$("#"+table).find("a").jqmData("table",table);
-	
-	$("#"+table+" .today").bind("vclick", function(event,ui) {
-		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
+tables.forEach(function(value,index) {
+	$(document).on("pageinit","#"+value.id,function(event){
 		var table = $(this).jqmData("table");
-		var today = new Date();
-		$("#"+table+"-date").val($.format.date(today,"yyyy-MM-dd"));
-		$("#"+table+"-from-date").val($.format.date(today,"yyyy-MM-dd"));
-		$("#"+table+"-to-date").val($.format.date(today,"yyyy-MM-dd"));
-		clearItems(table);
-		var db = getDatabase();
-		queryItems(table,db,function(db){
-			$("#"+table+" ."+table+"-cuisine").trigger("create");
-			$("#"+table+" ."+table+"-product input").slider("refresh");
-			$("#"+table+" ."+table+"-items").listview("refresh");
+		$("#"+table).find("a").jqmData("table",table);
+		
+		$("#"+table+" .today").bind("vclick", function(event,ui) {
+			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
+			var table = $(this).jqmData("table");
+			var today = new Date();
+			$("#"+table+"-date").val($.format.date(today,"yyyy-MM-dd"));
+			$("#"+table+"-from-date").val($.format.date(today,"yyyy-MM-dd"));
+			$("#"+table+"-to-date").val($.format.date(today,"yyyy-MM-dd"));
+			clearItems(table);
+			var db = getDatabase();
+			queryItems(table,db,function(db){
+				$("#"+table+" ."+table+"-cuisine").trigger("create");
+				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
+				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
+			});
 		});
-	});
-	$("#"+table+" .tomorrow").bind("vclick", function(event,ui) {
-		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-		var table = $(this).jqmData("table");
-		var today = new Date();
-		var tomorrow = new Date(today.getTime() + (24 * 60 * 60 * 1000));
-		$("#"+table+"-date").val($.format.date(tomorrow,"yyyy-MM-dd"));
-		$("#"+table+"-from-date").val($.format.date(tomorrow,"yyyy-MM-dd"));
-		$("#"+table+"-to-date").val($.format.date(tomorrow,"yyyy-MM-dd"));
-		clearItems(table);
-		var db = getDatabase();
-		queryItems(table,db,function(db){
-			$("#"+table+" ."+table+"-cuisine").trigger("create");
-			$("#"+table+" ."+table+"-product input").slider("refresh");
-			$("#"+table+" ."+table+"-items").listview("refresh");
+		$("#"+table+" .tomorrow").bind("vclick", function(event,ui) {
+			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
+			var table = $(this).jqmData("table");
+			var today = new Date();
+			var tomorrow = new Date(today.getTime() + (24 * 60 * 60 * 1000));
+			$("#"+table+"-date").val($.format.date(tomorrow,"yyyy-MM-dd"));
+			$("#"+table+"-from-date").val($.format.date(tomorrow,"yyyy-MM-dd"));
+			$("#"+table+"-to-date").val($.format.date(tomorrow,"yyyy-MM-dd"));
+			clearItems(table);
+			var db = getDatabase();
+			queryItems(table,db,function(db){
+				$("#"+table+" ."+table+"-cuisine").trigger("create");
+				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
+				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
+			});
 		});
-	});
-	$("#"+table+" .day-after-tomorrow").bind("vclick", function(event,ui) {
-		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-		var table = $(this).jqmData("table");
-		var today = new Date();
-		var dayAfterTomorrow = new Date(today.getTime() + (2 * 24 * 60 * 60 * 1000));
-		$("#"+table+"-date").val($.format.date(dayAfterTomorrow,"yyyy-MM-dd"));
-		$("#"+table+"-from-date").val($.format.date(dayAfterTomorrow,"yyyy-MM-dd"));
-		$("#"+table+"-to-date").val($.format.date(dayAfterTomorrow,"yyyy-MM-dd"));
-		clearItems(table);
-		var db = getDatabase();
-		queryItems(table,db,function(db){
-			$("#"+table+" ."+table+"-cuisine").trigger("create");
-			$("#"+table+" ."+table+"-product input").slider("refresh");
-			$("#"+table+" ."+table+"-items").listview("refresh");
+		$("#"+table+" .day-after-tomorrow").bind("vclick", function(event,ui) {
+			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
+			var table = $(this).jqmData("table");
+			var today = new Date();
+			var dayAfterTomorrow = new Date(today.getTime() + (2 * 24 * 60 * 60 * 1000));
+			$("#"+table+"-date").val($.format.date(dayAfterTomorrow,"yyyy-MM-dd"));
+			$("#"+table+"-from-date").val($.format.date(dayAfterTomorrow,"yyyy-MM-dd"));
+			$("#"+table+"-to-date").val($.format.date(dayAfterTomorrow,"yyyy-MM-dd"));
+			clearItems(table);
+			var db = getDatabase();
+			queryItems(table,db,function(db){
+				$("#"+table+" ."+table+"-cuisine").trigger("create");
+				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
+				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
+			});
 		});
-	});
-	$("#"+table+" .next-week").bind("vclick", function(event,ui) {
-		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-		var table = $(this).jqmData("table");
-		var today = new Date();
-		var week = new Date(today.getTime() + (7 * 24 * 60 * 60 * 1000));
-		$("#"+table+"-date").val($.format.date(week,"yyyy-MM-dd"));
-		$("#"+table+"-from-date").val($.format.date(week,"yyyy-MM-dd"));
-		$("#"+table+"-to-date").val($.format.date(week,"yyyy-MM-dd"));
-		clearItems(table);
-		var db = getDatabase();
-		queryItems(table,db,function(db){
-			$("#"+table+" ."+table+"-cuisine").trigger("create");
-			$("#"+table+" ."+table+"-product input").slider("refresh");
-			$("#"+table+" ."+table+"-items").listview("refresh");
+		$("#"+table+" .next-week").bind("vclick", function(event,ui) {
+			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
+			var table = $(this).jqmData("table");
+			var today = new Date();
+			var week = new Date(today.getTime() + (7 * 24 * 60 * 60 * 1000));
+			$("#"+table+"-date").val($.format.date(week,"yyyy-MM-dd"));
+			$("#"+table+"-from-date").val($.format.date(week,"yyyy-MM-dd"));
+			$("#"+table+"-to-date").val($.format.date(week,"yyyy-MM-dd"));
+			clearItems(table);
+			var db = getDatabase();
+			queryItems(table,db,function(db){
+				$("#"+table+" ."+table+"-cuisine").trigger("create");
+				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
+				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
+			});
 		});
-	});
-	$("#"+table+" .next-month").bind("vclick", function(event,ui) {
-		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-		var table = $(this).jqmData("table");
-		var today = new Date();
-		var month = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
-		$("#"+table+"-date").val($.format.date(month,"yyyy-MM-dd"));
-		$("#"+table+"-from-date").val($.format.date(month,"yyyy-MM-dd"));
-		$("#"+table+"-to-date").val($.format.date(month,"yyyy-MM-dd"));
-		clearItems(table);
-		var db = getDatabase();
-		queryItems(table,db,function(db){
-			$("#"+table+" ."+table+"-cuisine").trigger("create");
-			$("#"+table+" ."+table+"-product input").slider("refresh");
-			$("#"+table+" ."+table+"-items").listview("refresh");
+		$("#"+table+" .next-month").bind("vclick", function(event,ui) {
+			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
+			var table = $(this).jqmData("table");
+			var today = new Date();
+			var month = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
+			$("#"+table+"-date").val($.format.date(month,"yyyy-MM-dd"));
+			$("#"+table+"-from-date").val($.format.date(month,"yyyy-MM-dd"));
+			$("#"+table+"-to-date").val($.format.date(month,"yyyy-MM-dd"));
+			clearItems(table);
+			var db = getDatabase();
+			queryItems(table,db,function(db){
+				$("#"+table+" ."+table+"-cuisine").trigger("create");
+				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
+				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
+			});
 		});
-	});
-	$("#"+table+" .custom").bind("vclick", function(event,ui) {
-		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-		var table = $(this).jqmData("table");
-		clearItems(table);
-		var db = getDatabase();
-		queryItems(table,db,function(db){
-			$("#"+table+" ."+table+"-cuisine").trigger("create");
-			$("#"+table+" ."+table+"-product input").slider("refresh");
-			$("#"+table+" ."+table+"-items").listview("refresh");
+		$("#"+table+" .custom").bind("vclick", function(event,ui) {
+			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
+			var table = $(this).jqmData("table");
+			clearItems(table);
+			var db = getDatabase();
+			queryItems(table,db,function(db){
+				$("#"+table+" ."+table+"-cuisine").trigger("create");
+				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
+				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
+			});
 		});
-	});
-	$("#"+table+" .yesterday").bind("vclick", function(event,ui) {
-		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-		var table = $(this).jqmData("table");
-		var today = new Date();
-		var yesterday = new Date(today.getTime() - (24 * 60 * 60 * 1000));
-		$("#"+table+"-date").val($.format.date(yesterday,"yyyy-MM-dd"));
-		$("#"+table+"-from-date").val($.format.date(yesterday,"yyyy-MM-dd"));
-		$("#"+table+"-to-date").val($.format.date(yesterday,"yyyy-MM-dd"));
-		clearItems(table);
-		var db = getDatabase();
-		queryItems(table,db,function(db){
-			$("#"+table+" ."+table+"-cuisine").trigger("create");
-			$("#"+table+" ."+table+"-product input").slider("refresh");
-			$("#"+table+" ."+table+"-items").listview("refresh");
+		$("#"+table+" .yesterday").bind("vclick", function(event,ui) {
+			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
+			var table = $(this).jqmData("table");
+			var today = new Date();
+			var yesterday = new Date(today.getTime() - (24 * 60 * 60 * 1000));
+			$("#"+table+"-date").val($.format.date(yesterday,"yyyy-MM-dd"));
+			$("#"+table+"-from-date").val($.format.date(yesterday,"yyyy-MM-dd"));
+			$("#"+table+"-to-date").val($.format.date(yesterday,"yyyy-MM-dd"));
+			clearItems(table);
+			var db = getDatabase();
+			queryItems(table,db,function(db){
+				$("#"+table+" ."+table+"-cuisine").trigger("create");
+				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
+				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
+			});
 		});
-	});
-	$("#"+table+" .day-before-yesterday").bind("vclick", function(event,ui) {
-		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-		var table = $(this).jqmData("table");
-		var today = new Date();
-		var dayBeforeYesterday = new Date(today.getTime() - (2 * 24 * 60 * 60 * 1000));
-		$("#"+table+"-date").val($.format.date(dayBeforeYesterday,"yyyy-MM-dd"));
-		$("#"+table+"-from-date").val($.format.date(dayBeforeYesterday,"yyyy-MM-dd"));
-		$("#"+table+"-to-date").val($.format.date(dayBeforeYesterday,"yyyy-MM-dd"));
-		clearItems(table);
-		var db = getDatabase();
-		queryItems(table,db,function(db){
-			$("#"+table+" ."+table+"-cuisine").trigger("create");
-			$("#"+table+" ."+table+"-product input").slider("refresh");
-			$("#"+table+" ."+table+"-items").listview("refresh");
+		$("#"+table+" .day-before-yesterday").bind("vclick", function(event,ui) {
+			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
+			var table = $(this).jqmData("table");
+			var today = new Date();
+			var dayBeforeYesterday = new Date(today.getTime() - (2 * 24 * 60 * 60 * 1000));
+			$("#"+table+"-date").val($.format.date(dayBeforeYesterday,"yyyy-MM-dd"));
+			$("#"+table+"-from-date").val($.format.date(dayBeforeYesterday,"yyyy-MM-dd"));
+			$("#"+table+"-to-date").val($.format.date(dayBeforeYesterday,"yyyy-MM-dd"));
+			clearItems(table);
+			var db = getDatabase();
+			queryItems(table,db,function(db){
+				$("#"+table+" ."+table+"-cuisine").trigger("create");
+				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
+				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
+			});
 		});
-	});
-	$("#"+table+" .prev-week").bind("vclick", function(event,ui) {
-		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-		var table = $(this).jqmData("table");
-		var today = new Date();
-		var week = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000));
-		$("#"+table+"-date").val($.format.date(week,"yyyy-MM-dd"));
-		$("#"+table+"-from-date").val($.format.date(week,"yyyy-MM-dd"));
-		$("#"+table+"-to-date").val($.format.date(week,"yyyy-MM-dd"));
-		clearItems(table);
-		var db = getDatabase();
-		queryItems(table,db,function(db){
-			$("#"+table+" ."+table+"-cuisine").trigger("create");
-			$("#"+table+" ."+table+"-product input").slider("refresh");
-			$("#"+table+" ."+table+"-items").listview("refresh");
+		$("#"+table+" .prev-week").bind("vclick", function(event,ui) {
+			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
+			var table = $(this).jqmData("table");
+			var today = new Date();
+			var week = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000));
+			$("#"+table+"-date").val($.format.date(week,"yyyy-MM-dd"));
+			$("#"+table+"-from-date").val($.format.date(week,"yyyy-MM-dd"));
+			$("#"+table+"-to-date").val($.format.date(week,"yyyy-MM-dd"));
+			clearItems(table);
+			var db = getDatabase();
+			queryItems(table,db,function(db){
+				$("#"+table+" ."+table+"-cuisine").trigger("create");
+				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
+				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
+			});
 		});
-	});
-	$("#"+table+" .prev-month").bind("vclick", function(event,ui) {
-		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-		var table = $(this).jqmData("table");
-		var today = new Date();
-		var month = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
-		$("#"+table+"-date").val($.format.date(month,"yyyy-MM-dd"));
-		$("#"+table+"-from-date").val($.format.date(month,"yyyy-MM-dd"));
-		$("#"+table+"-to-date").val($.format.date(month,"yyyy-MM-dd"));
-		clearItems(table);
-		var db = getDatabase();
-		queryItems(table,db,function(db){
-			$("#"+table+" ."+table+"-cuisine").trigger("create");
-			$("#"+table+" ."+table+"-product input").slider("refresh");
-			$("#"+table+" ."+table+"-items").listview("refresh");
+		$("#"+table+" .prev-month").bind("vclick", function(event,ui) {
+			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
+			var table = $(this).jqmData("table");
+			var today = new Date();
+			var month = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+			$("#"+table+"-date").val($.format.date(month,"yyyy-MM-dd"));
+			$("#"+table+"-from-date").val($.format.date(month,"yyyy-MM-dd"));
+			$("#"+table+"-to-date").val($.format.date(month,"yyyy-MM-dd"));
+			clearItems(table);
+			var db = getDatabase();
+			queryItems(table,db,function(db){
+				$("#"+table+" ."+table+"-cuisine").trigger("create");
+				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
+				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
+			});
 		});
 	});
 });
@@ -1854,9 +1868,16 @@ $(document).on("pageinit","#diet", function(event){
 	var table = $(this).jqmData("table");
 	$("#"+table).find("a").jqmData("table",table);
 	
+	var db = getDatabase();
+	queryItems(table,db,function(db){
+		$("#"+table+" ."+table+"-product select").selectmenu("refresh");
+		console.log($("#"+table+" ."+table+"-product select"),"refresh");
+	});
+
 	$("#"+table+" .refresh").bind("vclick", function(event,ui) {
 		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
 		var table = $(this).jqmData("table");
+		console.log(table,"refresh");
 		products.forEach(function(value,index) {
 			$("#"+table+"-"+value.id+"-qty").val(value.qty).change();
 			$("#"+table+"-"+value.id+"-period").val(value.period).change();

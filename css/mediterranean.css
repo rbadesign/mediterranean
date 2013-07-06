@@ -1,6 +1,6 @@
 /* CSS Document */
 
-body {
+body, .ui-slider {
 	text-align: center;
 }
 .diet-product-template, 
@@ -40,9 +40,12 @@ div[data-role='page'] {
 }
 
 .ui-header .ui-btn-inner, .ui-footer .ui-btn-inner {
-	font-size:18px !important;
+	font-size:16px !important;
 }
 
 .ui-li-count {
-	font-size:18px !important;
+	font-size:16px !important;
+}
+#main div[data-role="content"] {
+	padding:0;
 }
