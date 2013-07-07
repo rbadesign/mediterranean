@@ -230,7 +230,9 @@ function addItem(table) {
 		var itemData = item.jqmData("data");
 		if (page.find("form").valid()) {
 			var datetime = new Date(page.find("#cuisine-datetime").val());
-			datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
+			if(Modernizr.inputtypes['datetime-local']) {
+				datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
+			}
 			var title = datetime.toLocaleString();
 			item.find("#item-title").text(title);
 			var db = getDatabase();
@@ -867,7 +869,9 @@ function queryItems(table,db,callback) {
 						queryStatus(table,db,id);
 						itemId[table][itemData] = results.rows.item(i).id;
 						var datetime = new Date(results.rows.item(i).cuisine_datetime);
-						datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
+						if(Modernizr.inputtypes['datetime-local']) {
+							datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
+						}
 						page.find("#cuisine-datetime").val($.format.date(datetime,"yyyy-MM-ddTHH:mm"));
 						var title = datetime.toLocaleString();
 						item.find("#item-title").text(title);
@@ -1592,7 +1596,10 @@ $(document).on("pageinit",'#available',function(event){
 		var plannerPage = $("."+planner+"-page#"+plannerId);
 		var plannerItem = $("."+planner+"-item#"+plannerId);
 		var current = new Date(Date.parse($("#"+table+"-date").val())+12*60*60*1000);
-		var datetime = new Date(current.getTime()+current.getTimezoneOffset()*60*1000);
+		var datetime = current;
+		if(Modernizr.inputtypes['datetime-local']) {
+			datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
+		}
 		plannerPage.find("#cuisine-datetime").val($.format.date(datetime,"yyyy-MM-ddTHH:mm"));
 		$("."+table+"-cuisine").each(function(index,element) {
 			var value = $(element).jqmData("cuisine-id");
@@ -1890,6 +1897,22 @@ $(document).on("pageinit","#diet", function(event){
 		saveItem(table,db,"",function(db) { 
 		});
 	});
+});
+
+$(document).on("pageinit",function(event) {
+	$.datepicker.setDefaults( $.datepicker.regional[ "ru" ] );
+	if(!Modernizr.inputtypes.date) {
+		$(this).find('input[type=date]').datepicker({
+		  	dateFormat: 'yyyy-mm-dd'
+		}); 
+	}
+	if(!Modernizr.inputtypes['datetime-local']) {
+		$(this).find('input[type="datetime-local"]').datetimepicker({
+		  	dateFormat: 'yyyy-mm-dd',
+			timeFormat: 'HH:mm',
+			separator: 'T'
+		}); 
+	}
 });
 
 function fail(error) {        
