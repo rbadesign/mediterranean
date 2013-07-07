@@ -324,8 +324,8 @@ function addItem(table) {
 		var id = page.attr("id");
 		var item = $("."+table+"-item#"+id);
 		var itemData = item.jqmData("data");
-		var itemImage = item.find("img");
-		var pageImage = page.find("img");
+		var itemImage = item.find("img#item-image");
+		var pageImage = page.find("img#cuisine-image");
 		if(media[table][itemData].length) {
 			mediaIndex[table][itemData]--; if (mediaIndex[table][itemData]<0) mediaIndex[table][itemData] = 0;
 			loadImage(itemImage,media[table][itemData][mediaIndex[table][itemData]]);
@@ -339,8 +339,8 @@ function addItem(table) {
 		var id = page.attr("id");
 		var item = $("."+table+"-item#"+id);
 		var itemData = item.jqmData("data");
-		var itemImage = item.find("img");
-		var pageImage = page.find("img");
+		var itemImage = item.find("img#item-image");
+		var pageImage = page.find("img#cuisine-image");
 		if(media[table][itemData].length) {
 			mediaIndex[table][itemData]++; if (mediaIndex[table][itemData]>media[table][itemData].length-1) mediaIndex[table][itemData] = media[table][itemData].length-1;
 			loadImage(itemImage,media[table][itemData][mediaIndex[table][itemData]]);
@@ -354,8 +354,8 @@ function addItem(table) {
 		var id = page.attr("id");
 		var item = $("."+table+"-item#"+id);
 		var itemData = item.jqmData("data");
-		var itemImage = item.find("img");
-		var pageImage = page.find("img");
+		var itemImage = item.find("img#item-image");
+		var pageImage = page.find("img#cuisine-image");
 		try {
 			var captureSuccess = function(mediaFiles) {    
 				var i, path, len;    
@@ -407,8 +407,8 @@ function addItem(table) {
 		media[diary][diaryItemData]=media[table][itemData];
 		mediaIndex[diary][diaryItemData]=mediaIndex[table][itemData];
 		if (media[diary][diaryItemData].lenght) {
-			var itemImage = diaryItem.find("img");
-			var pageImage = diaryPage.find("img");
+			var itemImage = diaryItem.find("img#item-image");
+			var pageImage = diaryPage.find("img#cuisine-image");
 			loadImage(itemImage,media[diary][diaryItemData][mediaIndex[diary][diaryItemData]]);
 			loadImage(pageImage,media[diary][diaryItemData][mediaIndex[diary][diaryItemData]]);
 		}
@@ -889,8 +889,8 @@ function queryItems(table,db,callback) {
 						var id = item.attr("id");
 						var page = $("."+table+"-page#"+id);
 						var itemData = item.jqmData("data");
-						var itemImage = item.find("img");
-						var pageImage = page.find("img");
+						var itemImage = item.find("img#item-image");
+						var pageImage = page.find("img#cuisine-image");
 				
 						var queryChildren = function (tx) {
 							
