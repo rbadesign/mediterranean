@@ -230,7 +230,7 @@ function addItem(table) {
 		var itemData = item.jqmData("data");
 		if (page.find("form").valid()) {
 			var datetime = new Date(page.find("#cuisine-datetime").val());
-			if(Modernizr.inputtypes['datetime-local']) {
+			if(Modernizr.inputtypes.datetimeLocal) {
 				datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
 			}
 			var title = datetime.toLocaleString();
@@ -869,7 +869,7 @@ function queryItems(table,db,callback) {
 						queryStatus(table,db,id);
 						itemId[table][itemData] = results.rows.item(i).id;
 						var datetime = new Date(results.rows.item(i).cuisine_datetime);
-						if(Modernizr.inputtypes['datetime-local']) {
+						if(Modernizr.inputtypes.datetimeLocal) {
 							datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
 						}
 						page.find("#cuisine-datetime").val($.format.date(datetime,"yyyy-MM-ddTHH:mm"));
@@ -1597,7 +1597,7 @@ $(document).on("pageinit",'#available',function(event){
 		var plannerItem = $("."+planner+"-item#"+plannerId);
 		var current = new Date(Date.parse($("#"+table+"-date").val())+12*60*60*1000);
 		var datetime = current;
-		if(Modernizr.inputtypes['datetime-local']) {
+		if(Modernizr.inputtypes.datetimeLocal) {
 			datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
 		}
 		plannerPage.find("#cuisine-datetime").val($.format.date(datetime,"yyyy-MM-ddTHH:mm"));
@@ -1903,12 +1903,12 @@ $(document).on("pageinit",function(event) {
 	$.datepicker.setDefaults( $.datepicker.regional[ "ru" ] );
 	if(!Modernizr.inputtypes.date) {
 		$(this).find('input[type=date]').datepicker({
-		  	dateFormat: 'yyyy-mm-dd'
+		  	dateFormat: 'yy-mm-dd'
 		}); 
 	}
-	if(!Modernizr.inputtypes['datetime-local']) {
+	if(!Modernizr.inputtypes.datetimeLocal) {
 		$(this).find('input[type="datetime-local"]').datetimepicker({
-		  	dateFormat: 'yyyy-mm-dd',
+		  	dateFormat: 'yy-mm-dd',
 			timeFormat: 'HH:mm',
 			separator: 'T'
 		}); 
