@@ -1171,26 +1171,20 @@ function queryItems(table,db,callback) {
 					console.log('successSelect','end');
 				}
 				
-				var query = "SELECT product_id,product_qty,product_qty AS product_max FROM diet"
-				+" UNION ALL"
-				+" SELECT cuisine_product.product_id AS product_id,-SUM(cuisine_product_qty) AS product_qty,0 AS product_max FROM cuisine_product"
-				+" JOIN diary_cuisine ON diary_cuisine.cuisine_id=cuisine_product.cuisine_id"
-				+" JOIN diary ON diary.diary_id=diary_cuisine.diary_id"
-				+" JOIN diet ON diet.product_id=cuisine_product.product_id"
-				+" JOIN periods ON diet.product_period_id=periods.period_id"
-				+" WHERE diary.cuisine_datetime BETWEEN ?-periods.period_delay AND ?"
-				+" GROUP BY cuisine_product.product_id"
-				+" UNION ALL"
-				+" SELECT cuisine_product.product_id AS product_id,-SUM(cuisine_product_qty) AS product_qty,0 AS product_max FROM cuisine_product"
-				+" JOIN planner_cuisine ON planner_cuisine.cuisine_id=cuisine_product.cuisine_id"
-				+" JOIN planner ON planner.planner_id=planner_cuisine.planner_id"
-				+" JOIN diet ON diet.product_id=cuisine_product.product_id"
-				+" JOIN periods ON diet.product_period_id=periods.period_id"
-				+" WHERE planner.cuisine_datetime BETWEEN ?-periods.period_delay AND ?"
-				+" GROUP BY cuisine_product.product_id";
+				var query = "SELECT product_id,product_qty,product_qty AS product_max FROM diet";
+				["diary","planner"].forEach(function(value,index) {
+					query += " UNION ALL"
+					+" SELECT cuisine_product.product_id AS product_id,-SUM(cuisine_product_qty) AS product_qty,0 AS product_max FROM cuisine_product"
+					+" JOIN "+value+"_cuisine ON "+value+"_cuisine.cuisine_id=cuisine_product.cuisine_id"
+					+" JOIN "+value+" ON "+value+"."+value+"_id="+value+"_cuisine."+value+"_id"
+					+" JOIN diet ON diet.product_id=cuisine_product.product_id"
+					+" JOIN periods ON diet.product_period_id=periods.period_id"
+					+" WHERE "+value+".cuisine_datetime BETWEEN ?-periods.period_delay AND ?"
+					+" GROUP BY cuisine_product.product_id";
+				});
 				
-				console.log(query,[datetime,datetime+24*60*60*1000,datetime,datetime+24*60*60*1000]);
-				tx.executeSql(query,[datetime,datetime+24*60*60*1000,datetime,datetime+24*60*60*1000], successSelect, StatementErrorCallback);
+				console.log(query,[datetime+24*60*60*1000,datetime+24*60*60*1000,datetime+24*60*60*1000,datetime+24*60*60*1000]);
+				tx.executeSql(query,[datetime+24*60*60*1000,datetime+24*60*60*1000,datetime+24*60*60*1000,datetime+24*60*60*1000], successSelect, StatementErrorCallback);
 			}
 			
 			db.transaction(querySelect, TransactionErrorCallback);
@@ -1288,26 +1282,20 @@ function queryItems(table,db,callback) {
 					console.log('successSelect','end');
 				}
 				
-				var query = "SELECT product_id,product_qty FROM diet"
-				+" UNION ALL"
-				+" SELECT cuisine_product.product_id AS product_id,-SUM(cuisine_product_qty) AS product_qty FROM cuisine_product"
-				+" JOIN diary_cuisine ON diary_cuisine.cuisine_id=cuisine_product.cuisine_id"
-				+" JOIN diary ON diary.diary_id=diary_cuisine.diary_id"
-				+" JOIN diet ON diet.product_id=cuisine_product.product_id"
-				+" JOIN periods ON diet.product_period_id=periods.period_id"
-				+" WHERE diary.cuisine_datetime BETWEEN ?-periods.period_delay AND ?"
-				+" GROUP BY cuisine_product.product_id"
-				+" UNION ALL"
-				+" SELECT cuisine_product.product_id AS product_id,-SUM(cuisine_product_qty) AS product_qty FROM cuisine_product"
-				+" JOIN planner_cuisine ON planner_cuisine.cuisine_id=cuisine_product.cuisine_id"
-				+" JOIN planner ON planner.planner_id=planner_cuisine.planner_id"
-				+" JOIN diet ON diet.product_id=cuisine_product.product_id"
-				+" JOIN periods ON diet.product_period_id=periods.period_id"
-				+" WHERE planner.cuisine_datetime BETWEEN ?-periods.period_delay AND ?"
-				+" GROUP BY cuisine_product.product_id";
+				var query = "SELECT product_id,product_qty FROM diet";
+				["diary","planner"].forEach(function(value,index) {
+					query += " UNION ALL"
+					+" SELECT cuisine_product.product_id AS product_id,-SUM(cuisine_product_qty) AS product_qty FROM cuisine_product"
+					+" JOIN "+value+"_cuisine ON "+value+"_cuisine.cuisine_id=cuisine_product.cuisine_id"
+					+" JOIN "+value+" ON "+value+"."+value+"_id="+value+"_cuisine."+value+"_id"
+					+" JOIN diet ON diet.product_id=cuisine_product.product_id"
+					+" JOIN periods ON diet.product_period_id=periods.period_id"
+					+" WHERE "+value+".cuisine_datetime BETWEEN ?-periods.period_delay AND ?"
+					+" GROUP BY cuisine_product.product_id";
+				});
 				
-				console.log(query,[datetime,datetime+24*60*60*1000,datetime,datetime+24*60*60*1000]);
-				tx.executeSql(query,[datetime,datetime+24*60*60*1000,datetime,datetime+24*60*60*1000], successSelect, StatementErrorCallback);
+				console.log(query,[datetime+24*60*60*1000,datetime+24*60*60*1000,datetime+24*60*60*1000,datetime+24*60*60*1000]);
+				tx.executeSql(query,[datetime+24*60*60*1000,datetime+24*60*60*1000,datetime+24*60*60*1000,datetime+24*60*60*1000], successSelect, StatementErrorCallback);
 			}
 			
 			db.transaction(querySelect, TransactionErrorCallback);
@@ -1759,103 +1747,42 @@ function clearQueryUpdateStatus(table) {
 	});
 }
 
+var buttons = Array(
+	{ class:"today", offset:0 },
+	{ class:"tomorrow", offset:24 * 60 * 60 * 1000 },
+	{ class:"day-after-tomorrow", offset:2 * 24 * 60 * 60 * 1000 },
+	{ class:"next-week", offset:7 * 24 * 60 * 60 * 1000 },
+	{ class:"next-month", offset:30 * 24 * 60 * 60 * 1000 },
+	{ class:"yesterday", offset:-24 * 60 * 60 * 1000 },
+	{ class:"day-before-yesterday", offset:-2 * 24 * 60 * 60 * 1000 },
+	{ class:"prev-week", offset:-7 * 24 * 60 * 60 * 1000 },
+	{ class:"prev-month", offset:-30 * 24 * 60 * 60 * 1000 }
+);
+	
 tables.forEach(function(value,index) {
 	$(document).on("pageinit","#"+value.id,function(event){
 		var table = $(this).jqmData("table");
 		$("#"+table).find("a").jqmData("table",table);
 		
-		$("#"+table+" .today").bind("vclick", function(event,ui) {
-			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-			var table = $(this).jqmData("table");
-			var today = new Date();
-			$("#"+table+"-date").val($.format.date(today,"yyyy-MM-dd"));
-			$("#"+table+"-from-date").val($.format.date(today,"yyyy-MM-dd"));
-			$("#"+table+"-to-date").val($.format.date(today,"yyyy-MM-dd"));
-			clearQueryUpdateStatus(table);
+		buttons.forEach(function(value,index) {
+			$("#"+table+" ."+value.class+"").jqmData("offset",value.offset);
+			
+			$("#"+table+" ."+value.class+"").bind("vclick", function(event,ui) {
+				if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
+				var table = $(this).jqmData("table");
+				var offset = $(this).jqmData("offset");
+				var today = new Date();
+				var datetime = new Date(today.getTime() + offset);
+				$("#"+table+"-date").val($.format.date(datetime,"yyyy-MM-dd"));
+				$("#"+table+"-from-date").val($.format.date(datetime,"yyyy-MM-dd"));
+				$("#"+table+"-to-date").val($.format.date(datetime,"yyyy-MM-dd"));
+				clearQueryUpdateStatus(table);
+			});
 		});
-		$("#"+table+" .tomorrow").bind("vclick", function(event,ui) {
-			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-			var table = $(this).jqmData("table");
-			var today = new Date();
-			var tomorrow = new Date(today.getTime() + (24 * 60 * 60 * 1000));
-			$("#"+table+"-date").val($.format.date(tomorrow,"yyyy-MM-dd"));
-			$("#"+table+"-from-date").val($.format.date(tomorrow,"yyyy-MM-dd"));
-			$("#"+table+"-to-date").val($.format.date(tomorrow,"yyyy-MM-dd"));
-			clearQueryUpdateStatus(table);
-		});
-		$("#"+table+" .day-after-tomorrow").bind("vclick", function(event,ui) {
-			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-			var table = $(this).jqmData("table");
-			var today = new Date();
-			var dayAfterTomorrow = new Date(today.getTime() + (2 * 24 * 60 * 60 * 1000));
-			$("#"+table+"-date").val($.format.date(dayAfterTomorrow,"yyyy-MM-dd"));
-			$("#"+table+"-from-date").val($.format.date(dayAfterTomorrow,"yyyy-MM-dd"));
-			$("#"+table+"-to-date").val($.format.date(dayAfterTomorrow,"yyyy-MM-dd"));
-			clearQueryUpdateStatus(table);
-		});
-		$("#"+table+" .next-week").bind("vclick", function(event,ui) {
-			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-			var table = $(this).jqmData("table");
-			var today = new Date();
-			var week = new Date(today.getTime() + (7 * 24 * 60 * 60 * 1000));
-			$("#"+table+"-date").val($.format.date(week,"yyyy-MM-dd"));
-			$("#"+table+"-from-date").val($.format.date(week,"yyyy-MM-dd"));
-			$("#"+table+"-to-date").val($.format.date(week,"yyyy-MM-dd"));
-			clearQueryUpdateStatus(table);
-		});
-		$("#"+table+" .next-month").bind("vclick", function(event,ui) {
-			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-			var table = $(this).jqmData("table");
-			var today = new Date();
-			var month = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
-			$("#"+table+"-date").val($.format.date(month,"yyyy-MM-dd"));
-			$("#"+table+"-from-date").val($.format.date(month,"yyyy-MM-dd"));
-			$("#"+table+"-to-date").val($.format.date(month,"yyyy-MM-dd"));
-			clearQueryUpdateStatus(table);
-		});
+		
 		$("#"+table+" .custom").bind("vclick", function(event,ui) {
 			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
 			var table = $(this).jqmData("table");
-			clearQueryUpdateStatus(table);
-		});
-		$("#"+table+" .yesterday").bind("vclick", function(event,ui) {
-			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-			var table = $(this).jqmData("table");
-			var today = new Date();
-			var yesterday = new Date(today.getTime() - (24 * 60 * 60 * 1000));
-			$("#"+table+"-date").val($.format.date(yesterday,"yyyy-MM-dd"));
-			$("#"+table+"-from-date").val($.format.date(yesterday,"yyyy-MM-dd"));
-			$("#"+table+"-to-date").val($.format.date(yesterday,"yyyy-MM-dd"));
-			clearQueryUpdateStatus(table);
-		});
-		$("#"+table+" .day-before-yesterday").bind("vclick", function(event,ui) {
-			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-			var table = $(this).jqmData("table");
-			var today = new Date();
-			var dayBeforeYesterday = new Date(today.getTime() - (2 * 24 * 60 * 60 * 1000));
-			$("#"+table+"-date").val($.format.date(dayBeforeYesterday,"yyyy-MM-dd"));
-			$("#"+table+"-from-date").val($.format.date(dayBeforeYesterday,"yyyy-MM-dd"));
-			$("#"+table+"-to-date").val($.format.date(dayBeforeYesterday,"yyyy-MM-dd"));
-			clearQueryUpdateStatus(table);
-		});
-		$("#"+table+" .prev-week").bind("vclick", function(event,ui) {
-			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-			var table = $(this).jqmData("table");
-			var today = new Date();
-			var week = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000));
-			$("#"+table+"-date").val($.format.date(week,"yyyy-MM-dd"));
-			$("#"+table+"-from-date").val($.format.date(week,"yyyy-MM-dd"));
-			$("#"+table+"-to-date").val($.format.date(week,"yyyy-MM-dd"));
-			clearQueryUpdateStatus(table);
-		});
-		$("#"+table+" .prev-month").bind("vclick", function(event,ui) {
-			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
-			var table = $(this).jqmData("table");
-			var today = new Date();
-			var month = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
-			$("#"+table+"-date").val($.format.date(month,"yyyy-MM-dd"));
-			$("#"+table+"-from-date").val($.format.date(month,"yyyy-MM-dd"));
-			$("#"+table+"-to-date").val($.format.date(month,"yyyy-MM-dd"));
 			clearQueryUpdateStatus(table);
 		});
 	});
