@@ -6,8 +6,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <title>Средиземноморская диета</title>
-  <link rel="stylesheet" href="css/ui-lightness/jquery-ui.css">
-  <link rel="stylesheet" href="css/jquery-ui-timepicker-addon.css">
   <link rel="stylesheet" href="css/jquery.mobile.css">
 
   <link rel="stylesheet" href="css/font-awesome.min.css">  
@@ -33,9 +31,6 @@
 		$.mobile.pushStateEnabled=true;
 	});
   </script>
-  <script src="js/jquery-ui.js"></script>
-  <script src="js/jquery-ui-i18n.js"></script>
-  <script src="js/jquery-ui-timepicker-addon.js"></script>
   <script src="js/jquery.mobile.js"></script>
   
   <script src="js/jquery.fullscreen.js"></script>
@@ -429,11 +424,15 @@
     </div>
 	<div data-role="content">
         <form>
-            <div data-role="fieldcontain" class="cuisine-datetime">
-                <label for="cuisine-datetime">
-                    Дата и время
-                </label>
-                <input name="cuisine-datetime" id="cuisine-datetime" placeholder="" value="" data-role="none" type="datetime-local" required>
+            <div data-role="fieldcontain">
+				<div class="ui-grid-a">
+                	<div class="ui-block-a">
+                		<input name="cuisine-date" id="cuisine-date" placeholder="" value="" data-role="none" type="date" required>
+                    </div>
+                    <div class="ui-block-b">
+                		<input name="cuisine-time" id="cuisine-time" placeholder="" value="" data-role="none" type="time" required>
+                    </div>
+                </div>
             </div>
             <div class="cuisine-image">
                 <img id="cuisine-image" src="images/image.png" alt="image" height="100%">
@@ -491,11 +490,15 @@
     </div>
 	<div data-role="content">
         <form>
-            <div data-role="fieldcontain" class="cuisine-datetime">
-                <label for="cuisine-datetime">
-                    Дата и время
-                </label>
-                <input name="cuisine-datetime" id="cuisine-datetime" placeholder="" value="" data-role="none" type="datetime-local" required>
+            <div data-role="fieldcontain">
+				<div class="ui-grid-a">
+                	<div class="ui-block-a">
+                		<input name="cuisine-date" id="cuisine-date" placeholder="" value="" data-role="none" type="date" required>
+                    </div>
+                    <div class="ui-block-b">
+                		<input name="cuisine-time" id="cuisine-time" placeholder="" value="" data-role="none" type="time" required>
+                    </div>
+                </div>
             </div>
             
             <div class="cuisine-image">
@@ -555,7 +558,7 @@
     </div>
 	<div data-role="content">
         <form>
-            <div data-role="fieldcontain" class="cuisine-datetime">
+            <div data-role="fieldcontain">
                 <label for="cuisine-title">
                     Название блюда
                 </label>

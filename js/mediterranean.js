@@ -185,7 +185,6 @@ function addItem(table) {
 	item.attr("id",id);
 	page.attr("id",id);
 	item.find("a").attr("href","#"+id);
-	item.trigger("create");
 	item.jqmData("data",itemData);
 	page.jqmData("data",itemData);
 	itemId[table].push(-1);
@@ -197,6 +196,7 @@ function addItem(table) {
 	page.find("a").jqmData("table",table);
 	item.find("a").addClass(table);
 	page.find("a").addClass(table);
+	$(".ui-listview ."+table+"-item#"+id).trigger("create");
 
 	page.on("pageshow", function(event) {
 		var table = $(this).jqmData("table");
@@ -229,11 +229,9 @@ function addItem(table) {
 		console.log("vclick",".diary.save,.planner.save",table,id);
 		var itemData = item.jqmData("data");
 		if (page.find("form").valid()) {
-			var datetime = new Date(page.find("#cuisine-datetime").val());
-			if(Modernizr.inputtypes.datetimeLocal) {
-				datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
-			}
-			var title = datetime.toLocaleString();
+			var datetime = new Date(page.find("#cuisine-date").val()+"T"+page.find("#cuisine-time").val());
+			datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
+			var title = $.format.date(datetime,"yyyy-MM-dd HH:mm")
 			item.find("#item-title").text(title);
 			var db = getDatabase();
 			saveItem(table,db,id,function(db) { 
@@ -241,8 +239,8 @@ function addItem(table) {
 				item.removeClass("changed").removeClass("new");
 				page.removeClass("changed").removeClass("new");
 				page.find("."+table+"-cuisine").removeClass("changed").removeClass("new");
+				$.mobile.changePage("#"+table+"");
 			});
-			$.mobile.changePage("#"+table+"");
 		}
 	});
 		
@@ -267,6 +265,7 @@ function addItem(table) {
 					$("select.diary-"+table+",select.planner-"+table+"").append(option);
 					item.removeClass("changed").removeClass("new");
 					page.removeClass("changed").removeClass("new");
+					$.mobile.changePage("#"+table+"");
 				});
 			} else {
 				saveItem(table,db,id,function(db) {
@@ -276,9 +275,9 @@ function addItem(table) {
 					$("select.planner-"+table+" option[value='"+itemId[table][itemData]+"']").text(title);
 					item.removeClass("changed").removeClass("new");
 					page.removeClass("changed").removeClass("new");
+					$.mobile.changePage("#"+table+"");
 				});
 			}
-			$.mobile.changePage("#"+table+"");
 		}
 	});
 	
@@ -400,7 +399,8 @@ function addItem(table) {
 		
 		var today = new Date();
 		
-		diaryPage.find("#cuisine-datetime").val($.format.date(today,"yyyy-MM-ddTHH:mm"));
+		diaryPage.find("#cuisine-date").val($.format.date(today,"yyyy-MM-dd"));
+		diaryPage.find("#cuisine-time").val($.format.date(today,"HH:mm"));
 		page.find("select."+table+"-cuisine").each(function(index,element) {
 			var cuisine = addItemCuisine(diary,diaryId);
 			var value = $(element).val();
@@ -408,7 +408,7 @@ function addItem(table) {
 		});
 		media[diary][diaryItemData]=media[table][itemData];
 		mediaIndex[diary][diaryItemData]=mediaIndex[table][itemData];
-		if (media[diary][diaryItemData].lenght) {
+		if (media[diary][diaryItemData].length) {
 			var itemImage = diaryItem.find("img#item-image");
 			var pageImage = diaryPage.find("img#cuisine-image");
 			loadImage(itemImage,media[diary][diaryItemData][mediaIndex[diary][diaryItemData]]);
@@ -579,6 +579,9 @@ function saveItemMedia(table,db,id,callback) {
 	var page = $("."+table+"-page#"+id);
 	var item = $("."+table+"-item#"+id);
 	var itemData = item.jqmData("data");
+	console.log('item',item);
+	console.log('page',page);
+	console.log('itemData',itemData);
 	var count = 0;
 	if (count == media[table][itemData].length) {
 		callback(db);
@@ -673,7 +676,7 @@ function saveItem(table,db,id,callback) {
 		var page = $("."+table+"-page#"+id);
 		var item = $("."+table+"-item#"+id);
 		var itemData = item.jqmData("data");
-		var datetime = Date.parse(page.find("#cuisine-datetime").val());
+		var datetime = Date.parse(page.find("#cuisine-date").val()+"T"+page.find("#cuisine-time").val());
 			
 	
 		if (itemId[table][itemData] == -1) {
@@ -858,96 +861,108 @@ function queryItems(table,db,callback) {
 				var successRecords = function (tx, results) {
 					console.log('successRecords','start');
 					console.log('results',results);
-					var len = results.rows.length;
-					for (var i=0; i<len; i++){
-						var id = addItem(table);
-						console.log("id",id);
-						var page = $("."+table+"-page#"+id);
-						var item = $("."+table+"-item#"+id);
-						var itemData = item.jqmData("data");
-						setStatus(table,id,"time");
-						queryStatus(table,db,id);
-						itemId[table][itemData] = results.rows.item(i).id;
-						var datetime = new Date(results.rows.item(i).cuisine_datetime);
-						if(Modernizr.inputtypes.datetimeLocal) {
+					var recordsLength = results.rows.length;
+					var childrenCount = 0;
+					var mediaCount = 0;
+					
+					if (childrenCount==recordsLength) {
+						childrenReadyDeferred.resolve();
+					}
+					if (mediaCount==recordsLength) {
+						mediaReadyDeferred.resolve();
+					}
+					
+					for (var i=0; i<recordsLength; i++){
+						if(itemId[table].indexOf(results.rows.item(i).id)==-1) {
+							var id = addItem(table);
+							console.log("id",id);
+							var page = $("."+table+"-page#"+id);
+							var item = $("."+table+"-item#"+id);
+							var itemData = item.jqmData("data");
+							var itemImage = item.find("img#item-image");
+							var pageImage = page.find("img#cuisine-image");
+							setStatus(table,id,"time");
+							queryStatus(table,db,id);
+							itemId[table][itemData] = results.rows.item(i).id;
+							var datetime = new Date(results.rows.item(i).cuisine_datetime);
 							datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
+							page.find("#cuisine-date").val($.format.date(datetime,"yyyy-MM-dd"));
+							page.find("#cuisine-time").val($.format.date(datetime,"HH:mm"));
+							var title = $.format.date(datetime,"yyyy-MM-dd HH:mm")
+							item.find("#item-title").text(title);
+
+							var queryChildren = function (tx) {
+								
+								var successChildren = function (tx, results) {
+									var len = results.rows.length;
+									var titles = Array()
+									for (var i=0; i<len; i++){
+										titles.push(results.rows.item(i).cuisine_title);
+										var cuisine = addItemCuisine(table,id);
+										cuisine.find("select.cuisine-type").val(results.rows.item(i).cuisine_type_id);
+										cuisine.find("select."+table+"-cuisine").val(results.rows.item(i).cuisine_id);
+	//									querySame("cuisine",db,$("select."+table+"-cuisine",cuisine),results.rows.item(i).cuisine_type_id,function (db) {
+	//									});
+									}
+									item.find("#item-desc").text(titles.join(","));
+									if (++childrenCount==recordsLength) {
+										childrenReadyDeferred.resolve();
+									}
+								}
+									
+								var query = "SELECT cuisine.cuisine_id,cuisine_type_id,cuisine_title FROM "+table+"_cuisine JOIN cuisine ON "+table+"_cuisine.cuisine_id=cuisine.cuisine_id WHERE "+table+"_id=?";
+								
+								console.log(query,[itemId[table][itemData]]);
+								tx.executeSql(query, [itemId[table][itemData]], successChildren, StatementErrorCallback);
+							}
+							
+							db.transaction(queryChildren, TransactionErrorCallback);
+					
+							var queryMedia = function (tx) {
+								
+								var successMedia = function (tx, results) {
+									console.log('successMedia','start');
+									console.log('results',results);
+									console.log('table',table);
+									console.log('itemData',itemData);
+									console.log('media[table]',media[table]);
+									console.log('media[table][itemData]',media[table][itemData]);
+									console.log('$(".'+table+'-item")',$("."+table+"-item"));
+									var len = results.rows.length;
+									for (var i=0; i<len; i++){
+										media[table][itemData].push(results.rows.item(i).full_path);
+									}
+									console.log('media[table][itemData]',media[table][itemData]);
+									if (media[table][itemData].length) {
+										mediaIndex[table][itemData] = media[table][itemData].length-1;  
+										loadImage(pageImage,media[table][itemData][mediaIndex[table][itemData]]);
+										loadImage(itemImage,media[table][itemData][mediaIndex[table][itemData]]);
+									}
+									if (++mediaCount==recordsLength) {
+										mediaReadyDeferred.resolve();
+									}
+									console.log('successMedia','end');
+								}
+								
+								var query = "SELECT * FROM "+table+"_media WHERE "+table+"_id=?";
+								
+								console.log(query,[itemId[table][itemData]]);
+								tx.executeSql(query, [itemId[table][itemData]], successMedia, StatementErrorCallback);
+							}
+							
+							db.transaction(queryMedia, TransactionErrorCallback);
+						} else {
+							  if (++childrenCount==recordsLength) {
+								  childrenReadyDeferred.resolve();
+							  }
+							  if (++mediaCount==recordsLength) {
+								  mediaReadyDeferred.resolve();
+							  }
 						}
-						page.find("#cuisine-datetime").val($.format.date(datetime,"yyyy-MM-ddTHH:mm"));
-						var title = datetime.toLocaleString();
-						item.find("#item-title").text(title);
 					}
 					
 					readyDeferred.resolve();
 					
-					var childrenCount = 0;
-					var mediaCount = 0;
-					if (childrenCount==$("."+table+"-item").length) {
-						childrenReadyDeferred.resolve();
-					}
-					if (mediaCount==$("."+table+"-item").length) {
-						mediaReadyDeferred.resolve();
-					}
-					
-					$("."+table+"-item").each(function() {
-						var item = $(this);
-						var id = item.attr("id");
-						var page = $("."+table+"-page#"+id);
-						var itemData = item.jqmData("data");
-						var itemImage = item.find("img#item-image");
-						var pageImage = page.find("img#cuisine-image");
-				
-						var queryChildren = function (tx) {
-							
-							var successChildren = function (tx, results) {
-								var len = results.rows.length;
-								var titles = Array()
-								for (var i=0; i<len; i++){
-									titles.push(results.rows.item(i).cuisine_title);
-									var cuisine = addItemCuisine(table,id);
-									cuisine.find("select.cuisine-type").val(results.rows.item(i).cuisine_type_id);
-									cuisine.find("select."+table+"-cuisine").val(results.rows.item(i).cuisine_id);
-//									querySame("cuisine",db,$("select."+table+"-cuisine",cuisine),results.rows.item(i).cuisine_type_id,function (db) {
-//									});
-								}
-								item.find("#item-desc").text(titles.join(","));
-								if (++childrenCount==$("."+table+"-item").length) {
-									childrenReadyDeferred.resolve();
-								}
-							}
-								
-							var query = "SELECT cuisine.cuisine_id,cuisine_type_id,cuisine_title FROM "+table+"_cuisine JOIN cuisine ON "+table+"_cuisine.cuisine_id=cuisine.cuisine_id WHERE "+table+"_id=?";
-							
-							console.log(query,[itemId[table][itemData]]);
-							tx.executeSql(query, [itemId[table][itemData]], successChildren, StatementErrorCallback);
-						}
-						
-						db.transaction(queryChildren, TransactionErrorCallback);
-				
-						var queryMedia = function (tx) {
-							
-							var successMedia = function (tx, results) {
-								var len = results.rows.length;
-								for (var i=0; i<len; i++){
-									media[table][itemData].push(results.rows.item(i).full_path);
-								}
-								if (media[table][itemData].lenght) {
-									mediaIndex[table][itemData] = media[table][itemData].length-1;  
-									loadImage(pageImage,media[table][itemData][mediaIndex[table][itemData]]);
-									loadImage(itemImage,media[table][itemData][mediaIndex[table][itemData]]);
-								}
-								if (++mediaCount==$("."+table+"-item").length) {
-									mediaReadyDeferred.resolve();
-								}
-							}
-							
-							var query = "SELECT * FROM "+table+"_media WHERE "+table+"_id=?";
-							
-							console.log(query,[itemId[table][itemData]]);
-							tx.executeSql(query, [itemId[table][itemData]], successMedia, StatementErrorCallback);
-						}
-						
-						db.transaction(queryMedia, TransactionErrorCallback);
-					});
 					console.log('successRecords','end');
 				}
 				
@@ -967,96 +982,100 @@ function queryItems(table,db,callback) {
 				var successSelect = function (tx, results) {
 					console.log('successSelect','start');
 					console.log('results',results);
-					var len = results.rows.length;
-					for (var i=0; i<len; i++){
-						var id = addItem(table);
-						console.log("id",id);
-						var page = $("."+table+"-page#"+id);
-						var item = $("."+table+"-item#"+id);
-						var itemData = item.jqmData("data");
-						setStatus(table,id,"dialog-clean");
-						itemId[table][itemData] = results.rows.item(i).id;
-						var title = results.rows.item(i).cuisine_title;
-						var type = results.rows.item(i).cuisine_type_id;
-						page.find("#"+table+"-title").val(title);
-						page.find("#"+table+"-type").val(type);
-						item.find("#item-title").text(title)
-		
-						var option = "<option data-placeholder='false' value='"+itemId[table][itemData]+"'>"+title+"</option>";
-						$("select.diary-"+table+",select.planner-"+table+"").append(option);
+					var recordsLength = results.rows.length;
+					var childrenCount = 0;
+					var mediaCount = 0;
+					
+					if (childrenCount==recordsLength) {
+						childrenReadyDeferred.resolve();
+					}
+					if (mediaCount==recordsLength) {
+						mediaReadyDeferred.resolve();
+					}
+					for (var i=0; i<recordsLength; i++){
+						if(itemId[table].indexOf(results.rows.item(i).id)==-1) {
+							var id = addItem(table);
+							console.log("id",id);
+							var page = $("."+table+"-page#"+id);
+							var item = $("."+table+"-item#"+id);
+							var itemData = item.jqmData("data");
+							var itemImage = item.find("img#item-image");
+							var pageImage = page.find("img#cuisine-image");
+							setStatus(table,id,"dialog-clean");
+							itemId[table][itemData] = results.rows.item(i).id;
+							var title = results.rows.item(i).cuisine_title;
+							var type = results.rows.item(i).cuisine_type_id;
+							page.find("#"+table+"-title").val(title);
+							page.find("#"+table+"-type").val(type);
+							item.find("#item-title").text(title)
+			
+							var option = "<option data-placeholder='false' value='"+itemId[table][itemData]+"'>"+title+"</option>";
+							$("select.diary-"+table+",select.planner-"+table+"").append(option);
+
+							var queryChildren = function (tx) {
+								
+								var successChildren = function (tx, results) {
+									console.log('successChildren','start');
+									console.log('results',results);
+									var titles = Array()
+									var len = results.rows.length;
+									for (var i=0; i<len; i++){
+										if (results.rows.item(i).cuisine_product_qty) {
+											titles.push(results.rows.item(i).product_title);
+										}
+										page.find("#"+table+"-"+results.rows.item(i).product_id).val(results.rows.item(i).cuisine_product_qty);
+									}
+									item.find("#item-desc").text(titles.join(","));
+									if (++childrenCount==recordsLength) {
+										childrenReadyDeferred.resolve();
+									}
+									console.log('successChildren','end');
+								}
+								
+								var query =	"SELECT "+table+"_product.product_id,product_title FROM "+table+"_product JOIN diet ON "+table+"_product.product_id=diet.product_id WHERE "+table+"_id=?";
+								
+								console.log(query,[itemId[table][itemData]]);
+								tx.executeSql(query, [itemId[table][itemData]], successChildren, StatementErrorCallback);
+							}
+							
+							db.transaction(queryChildren, TransactionErrorCallback);	
+							
+							var queryMedia = function (tx) {
+								
+								var successMedia = function (tx, results) {
+									var len = results.rows.length;
+									for (var i=0; i<len; i++){
+										media[table][itemData].push(results.rows.item(i).full_path);
+									}
+									if (media[table][itemData].length) {
+										mediaIndex[table][itemData] = media[table][itemData].length-1;  
+										loadImage(pageImage,media[table][itemData][mediaIndex[table][itemData]]);
+										loadImage(itemImage,media[table][itemData][mediaIndex[table][itemData]]);
+									}
+									if (++mediaCount==recordsLength) {
+										mediaReadyDeferred.resolve();
+									}
+								}
+								
+								var query = "SELECT * FROM "+table+"_media WHERE "+table+"_id=?";
+								
+								console.log(query,[itemId[table][itemData]]);
+								tx.executeSql(query, [itemId[table][itemData]], successMedia, StatementErrorCallback);
+							}
+							
+							db.transaction(queryMedia, TransactionErrorCallback);
+						} else {
+							  if (++childrenCount==recordsLength) {
+								  childrenReadyDeferred.resolve();
+							  }
+							  if (++mediaCount==recordsLength) {
+								  mediaReadyDeferred.resolve();
+							  }
+						}
 					}
 					
 					readyDeferred.resolve();
 					
-					var childrenCount = 0;
-					var mediaCount = 0;
-					if (childrenCount==$("."+table+"-item").length) {
-						childrenReadyDeferred.resolve();
-					}
-					if (mediaCount==$("."+table+"-item").length) {
-						mediaReadyDeferred.resolve();
-					}
-							
-					$("."+table+"-item").each(function() {
-						var item = $(this);
-						var id = item.attr("id");
-						var page = $("."+table+"-page#"+id);
-						var itemData = item.jqmData("data");
-				
-						var queryChildren = function (tx) {
-							
-							var successChildren = function (tx, results) {
-								console.log('successChildren','start');
-								console.log('results',results);
-								var titles = Array()
-								var len = results.rows.length;
-								for (var i=0; i<len; i++){
-									if (results.rows.item(i).cuisine_product_qty) {
-										titles.push(results.rows.item(i).product_title);
-									}
-									page.find("#"+table+"-"+results.rows.item(i).product_id).val(results.rows.item(i).cuisine_product_qty);
-								}
-								item.find("#item-desc").text(titles.join(","));
-								if (++childrenCount==$("."+table+"-item").length) {
-									childrenReadyDeferred.resolve();
-								}
-								console.log('successChildren','end');
-							}
-							
-							var query =	"SELECT "+table+"_product.product_id,product_title FROM "+table+"_product JOIN diet ON "+table+"_product.product_id=diet.product_id WHERE "+table+"_id=?";
-							
-							console.log(query,[itemId[table][itemData]]);
-							tx.executeSql(query, [itemId[table][itemData]], successChildren, StatementErrorCallback);
-						}
-						
-						db.transaction(queryChildren, TransactionErrorCallback);	
-						
-						var queryMedia = function (tx) {
-							
-							var successMedia = function (tx, results) {
-								var len = results.rows.length;
-								for (var i=0; i<len; i++){
-									media[table][itemData].push(results.rows.item(i).full_path);
-								}
-								if (media[table][itemData].lenght) {
-									mediaIndex[table][itemData] = media[table][itemData].length-1;  
-									loadImage(pageImage,media[table][itemData][mediaIndex[table][itemData]]);
-									loadImage(itemImage,media[table][itemData][mediaIndex[table][itemData]]);
-								}
-								if (++mediaCount==$("."+table+"-item").length) {
-									mediaReadyDeferred.resolve();
-								}
-							}
-							
-							var query = "SELECT * FROM "+table+"_media WHERE "+table+"_id=?";
-							
-							console.log(query,[itemId[table][itemData]]);
-							tx.executeSql(query, [itemId[table][itemData]], successMedia, StatementErrorCallback);
-						}
-						
-						db.transaction(queryMedia, TransactionErrorCallback);
-					});
-		
 					console.log('successSelect','end');
 				}
 				
@@ -1296,7 +1315,7 @@ function queryStatus(table,db,id) {
 	var item = $("."+table+"-item#"+id);
 	var itemData = item.jqmData("data");
 	
-	var datetime = Date.parse($("#cuisine-datetime",page).val());
+	var datetime = Date.parse(page.find("#cuisine-date").val()+"T"+page.find("#cuisine-time").val());
 
 	var other;
 	switch(table) {
@@ -1575,11 +1594,6 @@ $(document).one("pageinit",function(event){
 $(document).on("pageinit",'#main',function(event){
 	var table = $(this).jqmData("table");
 	$("#"+table).find("a").jqmData("table",table);
-	$.datepicker.setDefaults( $.datepicker.regional[ "ru" ] );
-	$( "#calendar" ).datepicker({
-		inline: true,
-		autoSize: true,
-	});
 });
 
 $(document).on("pageinit",'#available',function(event){
@@ -1595,12 +1609,10 @@ $(document).on("pageinit",'#available',function(event){
 		var plannerId = addItem(planner);
 		var plannerPage = $("."+planner+"-page#"+plannerId);
 		var plannerItem = $("."+planner+"-item#"+plannerId);
-		var current = new Date(Date.parse($("#"+table+"-date").val())+12*60*60*1000);
-		var datetime = current;
-		if(Modernizr.inputtypes.datetimeLocal) {
-			datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
-		}
-		plannerPage.find("#cuisine-datetime").val($.format.date(datetime,"yyyy-MM-ddTHH:mm"));
+		var datetime = new Date(Date.parse($("#"+table+"-date").val())+12*60*60*1000);
+		datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
+		plannerPage.find("#cuisine-date").val($.format.date(datetime,"yyyy-MM-dd"));
+		plannerPage.find("#cuisine-time").val($.format.date(datetime,"HH:mm"));
 		$("."+table+"-cuisine").each(function(index,element) {
 			var value = $(element).jqmData("cuisine-id");
 			var checked = $(element).find("#"+table+"-"+value+":checked");
@@ -1634,6 +1646,19 @@ $(document).on("pageinit",'#cuisine',function(event){
 $(document).on("pageinit",'#diary,#planner',function(event){
 	var table = $(this).jqmData("table");
 	$("#"+table).find("a").jqmData("table",table);
+	
+	var today = new Date();
+	$("#"+table+"-date").val($.format.date(today,"yyyy-MM-dd"));
+	$("#"+table+"-from-date").val($.format.date(today,"yyyy-MM-dd"));
+	$("#"+table+"-to-date").val($.format.date(today,"yyyy-MM-dd"));
+
+	var db = getDatabase();
+	$("."+table+"-item.new").remove();
+	$("."+table+"-page.new").remove();
+	queryItems(table,db,function(db){
+		$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
+	});
+	
 	$("#"+table+" .add").bind("vclick", function(event,ui) {
 		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
 		var table = $(this).jqmData("table");
@@ -1644,7 +1669,8 @@ $(document).on("pageinit",'#diary,#planner',function(event){
 		item.addClass("new");
 		page.addClass("new");
 		var today = new Date();
-		page.find("#cuisine-datetime").val($.format.date(today,"yyyy-MM-ddTHH:mm"));
+		page.find("#cuisine-date").val($.format.date(today,"yyyy-MM-dd"));
+		page.find("#cuisine-time").val($.format.date(today,"HH:mm"));
 		var cuisine = addItemCuisine(table,id);
 		cuisine.addClass("new");
 		$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
@@ -1658,9 +1684,11 @@ $(document).on("pageshow","#available,#forecast",function(event){
 	console.log("pageshow",table);
 	var db = getDatabase();
 	queryItems(table,db,function(db){
+		console.log("queryItems(table,db,function(db){","start");
 		$("#"+table+" ."+table+"-cuisine").trigger("create");
 		$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
 		console.log($("#"+table+" ."+table+"-product input"),"refresh");
+		console.log("queryItems(table,db,function(db){","end");
 	});
 });
 
@@ -1682,21 +1710,6 @@ $(document).on("pageshow","#cuisine",function(event){
 	var table = $(this).jqmData("table");
 	$("#"+table).jqmData("table",table);
 	$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
-});
-
-$(document).on("pageinit","#diary,#planner",function(event){
-	var table = $(this).jqmData("table");
-	$("#"+table).find("a").jqmData("table",table);
-	
-	var today = new Date();
-	$("#"+table+"-date").val($.format.date(today,"yyyy-MM-dd"));
-	$("#"+table+"-from-date").val($.format.date(today,"yyyy-MM-dd"));
-	$("#"+table+"-to-date").val($.format.date(today,"yyyy-MM-dd"));
-
-	var db = getDatabase();
-	queryItems(table,db,function(db){
-		$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
-	});
 });
 
 $(document).on("pageinit","#available,#forecast",function(event){
@@ -1899,19 +1912,10 @@ $(document).on("pageinit","#diet", function(event){
 	});
 });
 
-$(document).on("pageinit",function(event) {
-	$.datepicker.setDefaults( $.datepicker.regional[ "ru" ] );
+$(document).on("pagebeforecreate",function(event) {
 	if(!Modernizr.inputtypes.date) {
-		$(this).find('input[type=date]').datepicker({
-		  	dateFormat: 'yy-mm-dd'
-		}); 
 	}
-	if(!Modernizr.inputtypes.datetimeLocal) {
-		$(this).find('input[type="datetime-local"]').datetimepicker({
-		  	dateFormat: 'yy-mm-dd',
-			timeFormat: 'HH:mm',
-			separator: 'T'
-		}); 
+	if(!Modernizr.inputtypes.time) {
 	}
 });
 
