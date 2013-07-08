@@ -1912,11 +1912,12 @@ $(document).on("pageinit","#diet", function(event){
 	});
 });
 
-$(document).on("pagebeforecreate",function(event) {
-	if(!Modernizr.inputtypes.date) {
-	}
-	if(!Modernizr.inputtypes.time) {
-	}
+$(document).on("pagebeforecreate","div[data-role='page']",function(event) {
+	$.mobiscroll.setDefaults({lang:"ru"});
+	console.log("pagebeforecreate",$(this).find("input[type='date']"));
+	console.log("pagebeforecreate",$(this).find("input[type='time']"));
+	$(this).find("input[type='date']").attr("type","text").mobiscroll().date({theme:"jqm",dateFormat:"yy-mm-dd"});
+	$(this).find("input[type='time']").attr("type","text").mobiscroll().time({theme:"jqm",timeFormat:"HH:ii"});
 });
 
 function fail(error) {        
