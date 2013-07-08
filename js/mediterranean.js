@@ -1742,6 +1742,23 @@ $(document).on("pageinit","#available,#forecast",function(event){
 	$("#"+table+"-to-date").val($.format.date(today,"yyyy-MM-dd"));
 });
 
+function clearQueryUpdateStatus(table) {
+	clearItems(table);
+	var db = getDatabase();
+	queryItems(table,db,function(db){
+		$("#"+table+" ."+table+"-cuisine").trigger("create");
+		$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
+		$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
+		$("#"+table+" ."+table+"-item").each(function(index,element) {
+			var elementTable = $(element).jqmData("table");
+			var elementId = $(element).attr("id");
+			setStatus(elementTable,elementId,"time");
+			queryStatus(elementTable,db,elementId);
+		});
+		$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
+	});
+}
+
 tables.forEach(function(value,index) {
 	$(document).on("pageinit","#"+value.id,function(event){
 		var table = $(this).jqmData("table");
@@ -1754,13 +1771,7 @@ tables.forEach(function(value,index) {
 			$("#"+table+"-date").val($.format.date(today,"yyyy-MM-dd"));
 			$("#"+table+"-from-date").val($.format.date(today,"yyyy-MM-dd"));
 			$("#"+table+"-to-date").val($.format.date(today,"yyyy-MM-dd"));
-			clearItems(table);
-			var db = getDatabase();
-			queryItems(table,db,function(db){
-				$("#"+table+" ."+table+"-cuisine").trigger("create");
-				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
-				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
-			});
+			clearQueryUpdateStatus(table);
 		});
 		$("#"+table+" .tomorrow").bind("vclick", function(event,ui) {
 			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
@@ -1770,13 +1781,7 @@ tables.forEach(function(value,index) {
 			$("#"+table+"-date").val($.format.date(tomorrow,"yyyy-MM-dd"));
 			$("#"+table+"-from-date").val($.format.date(tomorrow,"yyyy-MM-dd"));
 			$("#"+table+"-to-date").val($.format.date(tomorrow,"yyyy-MM-dd"));
-			clearItems(table);
-			var db = getDatabase();
-			queryItems(table,db,function(db){
-				$("#"+table+" ."+table+"-cuisine").trigger("create");
-				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
-				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
-			});
+			clearQueryUpdateStatus(table);
 		});
 		$("#"+table+" .day-after-tomorrow").bind("vclick", function(event,ui) {
 			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
@@ -1786,13 +1791,7 @@ tables.forEach(function(value,index) {
 			$("#"+table+"-date").val($.format.date(dayAfterTomorrow,"yyyy-MM-dd"));
 			$("#"+table+"-from-date").val($.format.date(dayAfterTomorrow,"yyyy-MM-dd"));
 			$("#"+table+"-to-date").val($.format.date(dayAfterTomorrow,"yyyy-MM-dd"));
-			clearItems(table);
-			var db = getDatabase();
-			queryItems(table,db,function(db){
-				$("#"+table+" ."+table+"-cuisine").trigger("create");
-				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
-				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
-			});
+			clearQueryUpdateStatus(table);
 		});
 		$("#"+table+" .next-week").bind("vclick", function(event,ui) {
 			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
@@ -1802,13 +1801,7 @@ tables.forEach(function(value,index) {
 			$("#"+table+"-date").val($.format.date(week,"yyyy-MM-dd"));
 			$("#"+table+"-from-date").val($.format.date(week,"yyyy-MM-dd"));
 			$("#"+table+"-to-date").val($.format.date(week,"yyyy-MM-dd"));
-			clearItems(table);
-			var db = getDatabase();
-			queryItems(table,db,function(db){
-				$("#"+table+" ."+table+"-cuisine").trigger("create");
-				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
-				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
-			});
+			clearQueryUpdateStatus(table);
 		});
 		$("#"+table+" .next-month").bind("vclick", function(event,ui) {
 			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
@@ -1818,24 +1811,12 @@ tables.forEach(function(value,index) {
 			$("#"+table+"-date").val($.format.date(month,"yyyy-MM-dd"));
 			$("#"+table+"-from-date").val($.format.date(month,"yyyy-MM-dd"));
 			$("#"+table+"-to-date").val($.format.date(month,"yyyy-MM-dd"));
-			clearItems(table);
-			var db = getDatabase();
-			queryItems(table,db,function(db){
-				$("#"+table+" ."+table+"-cuisine").trigger("create");
-				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
-				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
-			});
+			clearQueryUpdateStatus(table);
 		});
 		$("#"+table+" .custom").bind("vclick", function(event,ui) {
 			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
 			var table = $(this).jqmData("table");
-			clearItems(table);
-			var db = getDatabase();
-			queryItems(table,db,function(db){
-				$("#"+table+" ."+table+"-cuisine").trigger("create");
-				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
-				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
-			});
+			clearQueryUpdateStatus(table);
 		});
 		$("#"+table+" .yesterday").bind("vclick", function(event,ui) {
 			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
@@ -1845,13 +1826,7 @@ tables.forEach(function(value,index) {
 			$("#"+table+"-date").val($.format.date(yesterday,"yyyy-MM-dd"));
 			$("#"+table+"-from-date").val($.format.date(yesterday,"yyyy-MM-dd"));
 			$("#"+table+"-to-date").val($.format.date(yesterday,"yyyy-MM-dd"));
-			clearItems(table);
-			var db = getDatabase();
-			queryItems(table,db,function(db){
-				$("#"+table+" ."+table+"-cuisine").trigger("create");
-				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
-				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
-			});
+			clearQueryUpdateStatus(table);
 		});
 		$("#"+table+" .day-before-yesterday").bind("vclick", function(event,ui) {
 			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
@@ -1861,13 +1836,7 @@ tables.forEach(function(value,index) {
 			$("#"+table+"-date").val($.format.date(dayBeforeYesterday,"yyyy-MM-dd"));
 			$("#"+table+"-from-date").val($.format.date(dayBeforeYesterday,"yyyy-MM-dd"));
 			$("#"+table+"-to-date").val($.format.date(dayBeforeYesterday,"yyyy-MM-dd"));
-			clearItems(table);
-			var db = getDatabase();
-			queryItems(table,db,function(db){
-				$("#"+table+" ."+table+"-cuisine").trigger("create");
-				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
-				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
-			});
+			clearQueryUpdateStatus(table);
 		});
 		$("#"+table+" .prev-week").bind("vclick", function(event,ui) {
 			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
@@ -1877,13 +1846,7 @@ tables.forEach(function(value,index) {
 			$("#"+table+"-date").val($.format.date(week,"yyyy-MM-dd"));
 			$("#"+table+"-from-date").val($.format.date(week,"yyyy-MM-dd"));
 			$("#"+table+"-to-date").val($.format.date(week,"yyyy-MM-dd"));
-			clearItems(table);
-			var db = getDatabase();
-			queryItems(table,db,function(db){
-				$("#"+table+" ."+table+"-cuisine").trigger("create");
-				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
-				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
-			});
+			clearQueryUpdateStatus(table);
 		});
 		$("#"+table+" .prev-month").bind("vclick", function(event,ui) {
 			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
@@ -1893,13 +1856,7 @@ tables.forEach(function(value,index) {
 			$("#"+table+"-date").val($.format.date(month,"yyyy-MM-dd"));
 			$("#"+table+"-from-date").val($.format.date(month,"yyyy-MM-dd"));
 			$("#"+table+"-to-date").val($.format.date(month,"yyyy-MM-dd"));
-			clearItems(table);
-			var db = getDatabase();
-			queryItems(table,db,function(db){
-				$("#"+table+" ."+table+"-cuisine").trigger("create");
-				$("#"+table+" ."+table+"-product input.ui-slider-input").slider("refresh");
-				$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
-			});
+			clearQueryUpdateStatus(table);
 		});
 	});
 });
