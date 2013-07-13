@@ -34,3 +34,13 @@ function loadImage(image, imagePath) {
 	};
 	window.resolveLocalFileSystemURI(imagePath,gotFileEntry, fail);
 }
+
+// Функция вывода сообщений трассировки
+// Обработка try-catch требуется для совместимости с IE
+function debugWrite(a,b) {
+	try {
+		console.log(a,b);
+	} catch (e) {
+	}
+}
+
