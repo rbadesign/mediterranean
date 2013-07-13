@@ -371,7 +371,7 @@ function addItem(table) {
 	page.on("vclick", ".take-photo", function(event) {
 		// capture callback
 		var table = $(this).jqmData("table");
-		var page = $(this).parents(".diary-page");
+		var page = $(this).parents("."+table+"-page");
 		var id = page.attr("id");
 		var item = $("."+table+"-item#"+id);
 		var itemData = item.jqmData("data");
