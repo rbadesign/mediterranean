@@ -1272,10 +1272,10 @@ function queryItems(table,db,callback) {
 										item.find("label[for='"+table+"-cuisine-id']").attr("for",""+table+"-"+results.rows.item(i).cuisine_id).text(results.rows.item(i).cuisine_title);
 										item.appendTo("#"+table+"-cuisine").removeClass(""+table+"-cuisine-template").addClass(""+table+"-cuisine");
 										item.find("[data-role='none']").removeAttr("data-role");
-										readyDeferred.resolve();
-										childrenReadyDeferred.resolve();
-										mediaReadyDeferred.resolve();
 									}
+									readyDeferred.resolve();
+									childrenReadyDeferred.resolve();
+									mediaReadyDeferred.resolve();
 									debugWrite('successSelectAvailable','end');
 								}
 								
