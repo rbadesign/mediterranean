@@ -307,7 +307,7 @@ function addItem(table) {
 		var page = $(this).parents("."+table+"-page");
 		var id = page.attr("id");
 		var item = $("."+table+"-item#"+id);
-		setStatus(table,id,"delete");
+		setStatus(table,id,"dialog-no");
 		debugWrite("vclick",".delete",table,id);
 		var itemData = item.jqmData("data");
 		
@@ -410,7 +410,7 @@ function addItem(table) {
 		var id = page.attr("id");
 		var item = $("."+table+"-item#"+id);
 		var itemData = item.jqmData("data");
-		setStatus(table,id,"delete");
+		setStatus(table,id,"dialog-no");
 		var diary = "diary";
 		var diaryId = addItem(diary);
 		debugWrite("diaryId",diaryId);
