@@ -1063,7 +1063,7 @@ function queryItems(table,db,callback) {
 									debugWrite('successChildren','end');
 								}
 								
-								var query =	"SELECT "+table+"_product.product_id,product_title FROM "+table+"_product JOIN diet ON "+table+"_product.product_id=diet.product_id WHERE "+table+"_id=?";
+								var query =	"SELECT "+table+"_product.product_id,product_title,"+table+"_product_qty FROM "+table+"_product JOIN diet ON "+table+"_product.product_id=diet.product_id WHERE "+table+"_id=?";
 								
 								debugWrite(query,[itemId[table][itemData]]);
 								tx.executeSql(query, [itemId[table][itemData]], successChildren, StatementErrorCallback);
