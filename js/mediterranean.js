@@ -382,6 +382,7 @@ function addItem(table) {
 				var i, path, len;    
 				for (i = 0, len = mediaFiles.length; i < len; i += 1) {        
 					path = mediaFiles[i].fullPath;        // do something interesting with the file  
+					debugWrite("path",path);
 					media[table][itemData].push(path);
 				}
 				if(media[table][itemData].length) {

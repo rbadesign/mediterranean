@@ -4,7 +4,7 @@ function loadSettings() {
 			$(this).val(window.localStorage.getItem($(this).attr("id")));
 		});
 	} catch(e) {
-		console.log("error",e);
+		debugWrite("error",e);
 	}
 }
 function saveSettings() {
@@ -13,24 +13,27 @@ function saveSettings() {
 			window.localStorage.setItem($(this).attr("id"),$(this).val());
 		});
 	} catch(e) {
-		console.log("error",e);
+		debugWrite("error",e);
 	}
 }
 function loadImage(image, imagePath) {
-	console.log("loadImage",imagePath);
+	debugWrite("loadImage",imagePath);
 	var createReader = function (readable) {
-		console.log("createReader");
+		debugWrite("createReader","start");
 		var reader = new FileReader();
 		reader.onloadend = function (evt) {
-			console.log("reader.onloadend");
+			debugWrite("reader.onloadend","start");
 			var dataURL = evt.target.result;
 			$(image).attr("src",dataURL);
+			debugWrite("reader.onloadend","end");
 		}
 		reader.readAsDataURL(readable);
+		debugWrite("createReader","end");
 	};    
 	var gotFileEntry = function (fileEntry) {
-		console.log("gotFileEntry");
+		debugWrite("gotFileEntry","start");
 		fileEntry.file(createReader, fail);
+		debugWrite("gotFileEntry","end");
 	};
 	window.resolveLocalFileSystemURI(imagePath,gotFileEntry, fail);
 }
