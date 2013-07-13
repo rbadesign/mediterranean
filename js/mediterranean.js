@@ -50,7 +50,7 @@ var itemId = {
 	diary: Array(),
 	planner:Array()
 };
-var media = {
+var photo = {
 	diet: Array(),
 	forecast: Array(),
 	available:Array(),
@@ -58,7 +58,7 @@ var media = {
 	diary: Array(),
 	planner:Array()
 };
-var mediaIndex = {
+var photoIndex = {
 	diet: Array(),
 	forecast: Array(),
 	available:Array(),
@@ -83,13 +83,13 @@ function createDatabase(db,callback) {
 			"CREATE TABLE IF NOT EXISTS diet (product_id VARCHAR(255) NOT NULL PRIMARY KEY,product_title VARCHAR(255),product_qty int,product_period_id VARCHAR(255))",
 			"CREATE TABLE IF NOT EXISTS cuisine (cuisine_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,cuisine_type_id VARCHAR(255),cuisine_title VARCHAR(255))",
 			"CREATE TABLE IF NOT EXISTS cuisine_product (cuisine_id INTEGER,product_id INTEGER,cuisine_product_qty INTEGER)",
-			"CREATE TABLE IF NOT EXISTS cuisine_media (cuisine_id INTEGER,full_path VARCHAR(255))",
+			"CREATE TABLE IF NOT EXISTS cuisine_photo (cuisine_id INTEGER,full_path VARCHAR(255))",
 			"CREATE TABLE IF NOT EXISTS planner (planner_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,cuisine_datetime BIGINT)",
 			"CREATE TABLE IF NOT EXISTS planner_cuisine (planner_id INTEGER,cuisine_id INTEGER)",
-			"CREATE TABLE IF NOT EXISTS planner_media (planner_id INTEGER,full_path VARCHAR(255))",
+			"CREATE TABLE IF NOT EXISTS planner_photo (planner_id INTEGER,full_path VARCHAR(255))",
 			"CREATE TABLE IF NOT EXISTS diary (diary_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,cuisine_datetime BIGINT)",
 			"CREATE TABLE IF NOT EXISTS diary_cuisine (diary_id INTEGER,cuisine_id INTEGER)",
-			"CREATE TABLE IF NOT EXISTS diary_media (diary_id INTEGER,full_path VARCHAR(255))"
+			"CREATE TABLE IF NOT EXISTS diary_photo (diary_id INTEGER,full_path VARCHAR(255))"
 		);
 
 		var successCreate = function (tx,results) {
@@ -190,8 +190,8 @@ function addItem(table) {
 	item.jqmData("data",itemData);
 	page.jqmData("data",itemData);
 	itemId[table].push(-1);
-	media[table].push(Array());
-	mediaIndex[table].push(-1);
+	photo[table].push(Array());
+	photoIndex[table].push(-1);
 	page.jqmData("table",table);
 	item.jqmData("table",table);
 	page.find("a").jqmData("table",table);
@@ -347,10 +347,10 @@ function addItem(table) {
 		var itemData = item.jqmData("data");
 		var itemImage = item.find("img#item-image");
 		var pageImage = page.find("img#cuisine-image");
-		if(media[table][itemData].length) {
-			mediaIndex[table][itemData]--; if (mediaIndex[table][itemData]<0) mediaIndex[table][itemData] = 0;
-			loadImage(itemImage,media[table][itemData][mediaIndex[table][itemData]]);
-			loadImage(pageImage,media[table][itemData][mediaIndex[table][itemData]]);
+		if(photo[table][itemData].length) {
+			photoIndex[table][itemData]--; if (photoIndex[table][itemData]<0) photoIndex[table][itemData] = 0;
+			loadImage(itemImage,photo[table][itemData][photoIndex[table][itemData]]);
+			loadImage(pageImage,photo[table][itemData][photoIndex[table][itemData]]);
 		}
 	});
 	page.on("vclick", ".next-image", function(event) {
@@ -362,10 +362,10 @@ function addItem(table) {
 		var itemData = item.jqmData("data");
 		var itemImage = item.find("img#item-image");
 		var pageImage = page.find("img#cuisine-image");
-		if(media[table][itemData].length) {
-			mediaIndex[table][itemData]++; if (mediaIndex[table][itemData]>media[table][itemData].length-1) mediaIndex[table][itemData] = media[table][itemData].length-1;
-			loadImage(itemImage,media[table][itemData][mediaIndex[table][itemData]]);
-			loadImage(pageImage,media[table][itemData][mediaIndex[table][itemData]]);
+		if(photo[table][itemData].length) {
+			photoIndex[table][itemData]++; if (photoIndex[table][itemData]>photo[table][itemData].length-1) photoIndex[table][itemData] = photo[table][itemData].length-1;
+			loadImage(itemImage,photo[table][itemData][photoIndex[table][itemData]]);
+			loadImage(pageImage,photo[table][itemData][photoIndex[table][itemData]]);
 		}
 	});
 	page.on("vclick", ".take-photo", function(event) {
@@ -378,17 +378,17 @@ function addItem(table) {
 		var itemImage = item.find("img#item-image");
 		var pageImage = page.find("img#cuisine-image");
 		try {
-			var captureSuccess = function(mediaFiles) {    
+			var captureSuccess = function(photoFiles) {    
 				var i, path, len;    
-				for (i = 0, len = mediaFiles.length; i < len; i += 1) {        
-					path = mediaFiles[i].fullPath;        // do something interesting with the file  
+				for (i = 0, len = photoFiles.length; i < len; i += 1) {        
+					path = photoFiles[i].fullPath;        // do something interesting with the file  
 					debugWrite("path",path);
-					media[table][itemData].push(path);
+					photo[table][itemData].push(path);
 				}
-				if(media[table][itemData].length) {
-					mediaIndex[table][itemData] = media[table][itemData].length-1;  
-					loadImage(itemImage,media[table][itemData][mediaIndex[table][itemData]]);
-					loadImage(pageImage,media[table][itemData][mediaIndex[table][itemData]]);
+				if(photo[table][itemData].length) {
+					photoIndex[table][itemData] = photo[table][itemData].length-1;  
+					loadImage(itemImage,photo[table][itemData][photoIndex[table][itemData]]);
+					loadImage(pageImage,photo[table][itemData][photoIndex[table][itemData]]);
 				}
 				item.addClass("changed");
 			};
@@ -427,13 +427,13 @@ function addItem(table) {
 			var value = $(element).val();
 			cuisine.find("select."+diary+"-cuisine").val(value);
 		});
-		media[diary][diaryItemData]=media[table][itemData];
-		mediaIndex[diary][diaryItemData]=mediaIndex[table][itemData];
-		if (media[diary][diaryItemData].length) {
+		photo[diary][diaryItemData]=photo[table][itemData];
+		photoIndex[diary][diaryItemData]=photoIndex[table][itemData];
+		if (photo[diary][diaryItemData].length) {
 			var itemImage = diaryItem.find("img#item-image");
 			var pageImage = diaryPage.find("img#cuisine-image");
-			loadImage(itemImage,media[diary][diaryItemData][mediaIndex[diary][diaryItemData]]);
-			loadImage(pageImage,media[diary][diaryItemData][mediaIndex[diary][diaryItemData]]);
+			loadImage(itemImage,photo[diary][diaryItemData][photoIndex[diary][diaryItemData]]);
+			loadImage(pageImage,photo[diary][diaryItemData][photoIndex[diary][diaryItemData]]);
 		}
 		
 		var pageHideReadyDeferred = $.Deferred();
@@ -515,8 +515,8 @@ function clearItems(table) {
 	$("."+table+"-item").remove(); 
 	$("."+table+"-page").remove();
 	itemId[table]=Array(); 
-	media[table]=Array(); 
-	mediaIndex[table]=Array(); 
+	photo[table]=Array(); 
+	photoIndex[table]=Array(); 
 }
 
 function deleteItem(table,db,id,callback) {
@@ -530,16 +530,16 @@ function deleteItem(table,db,id,callback) {
 			"DELETE FROM cuisine_product WHERE cuisine_id=?",
 			"DELETE FROM planner_cuisine WHERE cuisine_id=?",
 			"DELETE FROM diary_cuisine WHERE cuisine_id=?",
-			"DELETE FROM cuisine_media WHERE cuisine_id=?",
+			"DELETE FROM cuisine_photo WHERE cuisine_id=?",
 			"DELETE FROM cuisine WHERE cuisine_id=?"
 		),
 		diary: Array(
-			"DELETE FROM diary_media WHERE diary_id=?",
+			"DELETE FROM diary_photo WHERE diary_id=?",
 			"DELETE FROM diary_cuisine WHERE diary_id=?",
 			"DELETE FROM diary WHERE diary_id=?"	
 		),
 		planner: Array(
-			"DELETE FROM planner_media WHERE planner_id=?",
+			"DELETE FROM planner_photo WHERE planner_id=?",
 			"DELETE FROM planner_cuisine WHERE planner_id=?",
 			"DELETE FROM planner WHERE planner_id=?"
 		)
@@ -595,8 +595,8 @@ function saveItemCuisines(table,db,id,callback) {
 	debugWrite('saveItemCuisines','end');
 }
 
-function saveItemMedia(table,db,id,callback) {
-	debugWrite('saveItemMedia','start');
+function saveItemPhoto(table,db,id,callback) {
+	debugWrite('saveItemPhoto','start');
 	var page = $("."+table+"-page#"+id);
 	var item = $("."+table+"-item#"+id);
 	var itemData = item.jqmData("data");
@@ -604,22 +604,22 @@ function saveItemMedia(table,db,id,callback) {
 	debugWrite('page',page);
 	debugWrite('itemData',itemData);
 	var count = 0;
-	if (count == media[table][itemData].length) {
+	if (count == photo[table][itemData].length) {
 		callback(db);
 	}
-	media[table][itemData].forEach(function(value,index) {
+	photo[table][itemData].forEach(function(value,index) {
 		var queryInsert = function (tx) {
 			
 			var successInsert = function (tx, results) {
 				debugWrite('successInsert','start');
 				debugWrite('results',results);
-				if (++count == media[table][itemData].length) {
+				if (++count == photo[table][itemData].length) {
 					callback(db);
 				}
 				debugWrite('successInsert','end');
 			}
 			
-			var query =	"INSERT INTO "+table+"_media("+table+"_id,full_path) VALUES (?,?)";
+			var query =	"INSERT INTO "+table+"_photo("+table+"_id,full_path) VALUES (?,?)";
 				
 			debugWrite(query,[itemId[table][itemData],value]);
 			tx.executeSql(query,[itemId[table][itemData],value], successInsert, StatementErrorCallback);
@@ -627,7 +627,7 @@ function saveItemMedia(table,db,id,callback) {
 		
 		db.transaction(queryInsert, TransactionErrorCallback);
 	});
-	debugWrite('saveItemMedia','end');
+	debugWrite('saveItemPhoto','end');
 }
 
 function saveItemProducts(table,db,id,callback) {
@@ -671,24 +671,24 @@ function saveItem(table,db,id,callback) {
 
 	var readyDeferred = $.Deferred();
 	var childrenReadyDeferred = $.Deferred();
-	var mediaReadyDeferred = $.Deferred();
+	var photoReadyDeferred = $.Deferred();
 	
-	$.when(readyDeferred, childrenReadyDeferred, mediaReadyDeferred).then(function() {
+	$.when(readyDeferred, childrenReadyDeferred, photoReadyDeferred).then(function() {
 		callback(db);
 	});
 		
-	var queryDeleteMedia = function (tx) {
+	var queryDeletePhoto = function (tx) {
 		
-		var successDeleteMedia = function (tx, results) {
-			debugWrite('successDeleteMedia','start');
+		var successDeletePhoto = function (tx, results) {
+			debugWrite('successDeletePhoto','start');
 			debugWrite('results',results);
-			saveItemMedia(table,db, id, function(db) { mediaReadyDeferred.resolve(); } );
-			debugWrite('successDeleteMedia','end');
+			saveItemPhoto(table,db, id, function(db) { photoReadyDeferred.resolve(); } );
+			debugWrite('successDeletePhoto','end');
 		}
 		
-		var query =	"DELETE FROM "+table+"_media WHERE "+table+"_id=?";
+		var query =	"DELETE FROM "+table+"_photo WHERE "+table+"_id=?";
 		debugWrite(query,[itemId[table][itemData]]);
-		tx.executeSql(query,[itemId[table][itemData]], successDeleteMedia, StatementErrorCallback);
+		tx.executeSql(query,[itemId[table][itemData]], successDeletePhoto, StatementErrorCallback);
 	}
 
 	switch(table) {
@@ -709,7 +709,7 @@ function saveItem(table,db,id,callback) {
 					itemId[table][itemData] = results.insertId;
 					readyDeferred.resolve();
 					saveItemCuisines(table,db, id, function(db) { childrenReadyDeferred.resolve(); } );
-					saveItemMedia(table,db, id, function(db) { mediaReadyDeferred.resolve(); } );
+					saveItemPhoto(table,db, id, function(db) { photoReadyDeferred.resolve(); } );
 					debugWrite('successInsert','end');
 				}
 					
@@ -746,7 +746,7 @@ function saveItem(table,db,id,callback) {
 				}
 				
 				db.transaction(queryDeleteCuisines, TransactionErrorCallback);
-				db.transaction(queryDeleteMedia, TransactionErrorCallback);
+				db.transaction(queryDeletePhoto, TransactionErrorCallback);
 			}
 			
 			db.transaction(queryUpdate, TransactionErrorCallback);
@@ -768,7 +768,7 @@ function saveItem(table,db,id,callback) {
 					itemId[table][itemData] = results.insertId;
 					readyDeferred.resolve();
 					saveItemProducts(table,db, id, function(db) { childrenReadyDeferred.resolve(); } );
-					saveItemMedia(table,db, id, function(db) { mediaReadyDeferred.resolve(); } );
+					saveItemPhoto(table,db, id, function(db) { photoReadyDeferred.resolve(); } );
 					debugWrite('successInsert','end');
 				}
 				
@@ -809,12 +809,12 @@ function saveItem(table,db,id,callback) {
 			}
 			
 			db.transaction(queryDeleteProducts, TransactionErrorCallback);
-			db.transaction(queryDeleteMedia, TransactionErrorCallback);
+			db.transaction(queryDeletePhoto, TransactionErrorCallback);
 		}
 		break;
 	case "diet":
 		readyDeferred.resolve();
-		mediaReadyDeferred.resolve();
+		photoReadyDeferred.resolve();
 		var count = 0;
 		if (count == $("."+table+"-product").length) {
 			childrenReadyDeferred.resolve();
@@ -871,20 +871,20 @@ function queryItems(table,db,callback) {
 	
 	var readyDeferred = $.Deferred();
 	var childrenReadyDeferred = $.Deferred();
-	var mediaReadyDeferred = $.Deferred();
+	var photoReadyDeferred = $.Deferred();
 	
-	$.when(readyDeferred, childrenReadyDeferred, mediaReadyDeferred).then(function() {
+	$.when(readyDeferred, childrenReadyDeferred, photoReadyDeferred).then(function() {
 		callback(db);
 	});
 		
 	var recordsLength = 0;
 	var childrenCount = 0;
-	var mediaCount = 0;
+	var photoCount = 0;
 	var queryChildrenArgs = Array();
-	var queryMediaArgs = Array();
+	var queryPhotoArgs = Array();
 					
-	var successMedia = function (tx, results) {
-		debugWrite('successMedia','start');
+	var successPhoto = function (tx, results) {
+		debugWrite('successPhoto','start');
 		debugWrite('results',results);
 		var len = results.rows.length;
 		for (var i=0; i<len; i++){
@@ -897,15 +897,15 @@ function queryItems(table,db,callback) {
 			var itemData = item.jqmData("data");
 			var itemImage = item.find("img#item-image");
 			var pageImage = page.find("img#cuisine-image");
-			media[table][itemData].push(results.rows.item(i).full_path);
-			mediaIndex[table][itemData] = media[table][itemData].length-1;  
-			loadImage(pageImage,media[table][itemData][mediaIndex[table][itemData]]);
-			loadImage(itemImage,media[table][itemData][mediaIndex[table][itemData]]);
+			photo[table][itemData].push(results.rows.item(i).full_path);
+			photoIndex[table][itemData] = photo[table][itemData].length-1;  
+			loadImage(pageImage,photo[table][itemData][photoIndex[table][itemData]]);
+			loadImage(itemImage,photo[table][itemData][photoIndex[table][itemData]]);
 		}
-		if (++mediaCount==recordsLength) {
-			mediaReadyDeferred.resolve();
+		if (++photoCount==recordsLength) {
+			photoReadyDeferred.resolve();
 		}
-		debugWrite('successMedia','end');
+		debugWrite('successPhoto','end');
 	}
 	
 	try {
@@ -922,8 +922,8 @@ function queryItems(table,db,callback) {
 					if (childrenCount==recordsLength) {
 						childrenReadyDeferred.resolve();
 					}
-					if (mediaCount==recordsLength) {
-						mediaReadyDeferred.resolve();
+					if (photoCount==recordsLength) {
+						photoReadyDeferred.resolve();
 					}
 					
 					if (recordsLength) {
@@ -996,20 +996,20 @@ function queryItems(table,db,callback) {
 								queryChildrenArgs.push([itemId[table][itemData]]);
 								db.transaction(queryChildren, TransactionErrorCallback);
 						
-								var queryMedia = function (tx) {									
-									debugWrite('queryMedia','start');
+								var queryPhoto = function (tx) {									
+									debugWrite('queryPhoto','start');
 									debugWrite("table",table);
 									
-									var query = "SELECT '"+table+"' AS tbl,"+table+"_id AS id,* FROM "+table+"_media WHERE "+table+"_id=?";
-									var args = queryMediaArgs.pop();
+									var query = "SELECT '"+table+"' AS tbl,"+table+"_id AS id,* FROM "+table+"_photo WHERE "+table+"_id=?";
+									var args = queryPhotoArgs.pop();
 									debugWrite(query,args);
-									tx.executeSql(query, args, successMedia, StatementErrorCallback);
+									tx.executeSql(query, args, successPhoto, StatementErrorCallback);
 									
-									debugWrite('queryMedia','end');
+									debugWrite('queryPhoto','end');
 								}
 								
-								queryMediaArgs.push([itemId[table][itemData]]);
-								db.transaction(queryMedia, TransactionErrorCallback);
+								queryPhotoArgs.push([itemId[table][itemData]]);
+								db.transaction(queryPhoto, TransactionErrorCallback);
 							} else {
 								var table = results.rows.item(i).tbl;
 								var id = getId(results.rows.item(i).tbl,results.rows.item(i).id);
@@ -1021,8 +1021,8 @@ function queryItems(table,db,callback) {
 								if (++childrenCount==recordsLength) {
 									childrenReadyDeferred.resolve();
 								}
-								if (++mediaCount==recordsLength) {
-									mediaReadyDeferred.resolve();
+								if (++photoCount==recordsLength) {
+									photoReadyDeferred.resolve();
 								}
 							}
 						}
@@ -1054,8 +1054,8 @@ function queryItems(table,db,callback) {
 					if (childrenCount==recordsLength) {
 						childrenReadyDeferred.resolve();
 					}
-					if (mediaCount==recordsLength) {
-						mediaReadyDeferred.resolve();
+					if (photoCount==recordsLength) {
+						photoReadyDeferred.resolve();
 					}
 					
 					if (recordsLength) {
@@ -1128,22 +1128,22 @@ function queryItems(table,db,callback) {
 								queryChildrenArgs.push([itemId[table][itemData]]);
 								db.transaction(queryChildren, TransactionErrorCallback);	
 								
-								var queryMedia = function (tx) {
-									debugWrite('queryMedia','start');
+								var queryPhoto = function (tx) {
+									debugWrite('queryPhoto','start');
 									debugWrite("table",table);
 									debugWrite("id",id);
 																	
-									var query = "SELECT '"+table+"' AS tbl,"+table+"_id AS id,* FROM "+table+"_media WHERE "+table+"_id=?";
+									var query = "SELECT '"+table+"' AS tbl,"+table+"_id AS id,* FROM "+table+"_photo WHERE "+table+"_id=?";
 									
-									var args = queryMediaArgs.pop();
+									var args = queryPhotoArgs.pop();
 									debugWrite(query,args);
-									tx.executeSql(query, args, successMedia, StatementErrorCallback);
+									tx.executeSql(query, args, successPhoto, StatementErrorCallback);
 
-									debugWrite('queryMedia','end');
+									debugWrite('queryPhoto','end');
 								}
 								
-								queryMediaArgs.push([itemId[table][itemData]]);
-								db.transaction(queryMedia, TransactionErrorCallback);
+								queryPhotoArgs.push([itemId[table][itemData]]);
+								db.transaction(queryPhoto, TransactionErrorCallback);
 							} else {
 								var table = results.rows.item(i).tbl;
 								var id = getId(results.rows.item(i).tbl,results.rows.item(i).id);
@@ -1155,8 +1155,8 @@ function queryItems(table,db,callback) {
 								if (++childrenCount==recordsLength) {
 									childrenReadyDeferred.resolve();
 								}
-								if (++mediaCount==recordsLength) {
-									mediaReadyDeferred.resolve();
+								if (++photoCount==recordsLength) {
+									photoReadyDeferred.resolve();
 								}
 							}
 						}
@@ -1190,7 +1190,7 @@ function queryItems(table,db,callback) {
 					}
 					readyDeferred.resolve();
 					childrenReadyDeferred.resolve();
-					mediaReadyDeferred.resolve();
+					photoReadyDeferred.resolve();
 					debugWrite('successSelect','end');
 				}
 					
@@ -1239,7 +1239,7 @@ function queryItems(table,db,callback) {
 					});
 					readyDeferred.resolve();
 					childrenReadyDeferred.resolve();
-					mediaReadyDeferred.resolve();
+					photoReadyDeferred.resolve();
 					debugWrite('successSelect','end');
 				}
 				
@@ -1333,7 +1333,7 @@ function queryItems(table,db,callback) {
 											}
 											readyDeferred.resolve();
 											childrenReadyDeferred.resolve();
-											mediaReadyDeferred.resolve();
+											photoReadyDeferred.resolve();
 											debugWrite('successSelectAvailable','end');
 										}
 										
