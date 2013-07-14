@@ -187,6 +187,7 @@ function addItem(table) {
 	item.attr("id",id);
 	page.attr("id",id);
 	item.find("a").attr("href","#"+id);
+	page.find("a").attr("href","#"+table);
 	item.jqmData("data",itemData);
 	page.jqmData("data",itemData);
 	itemId[table].push(-1);
