@@ -225,6 +225,7 @@ function addItem(table) {
 		var cuisine = addItemCuisine(table,id);
 		cuisine.addClass("new");
 		cuisine.trigger("create");
+		return false;
 	});
 	
 	page.on("vclick", ".diary.save,.planner.save", function(event) {
@@ -255,6 +256,7 @@ function addItem(table) {
 				$.mobile.changePage("#"+table+"");
 			});
 		}
+		return false;
 	});
 		
 	page.on("vclick", ".cuisine.save", function(event) {
@@ -298,6 +300,7 @@ function addItem(table) {
 				});
 			}
 		}
+		return false;
 	});
 	
 	page.on("vclick", ".delete", function(event) {
@@ -329,13 +332,14 @@ function addItem(table) {
 		});
 		
 		$.mobile.changePage("#"+table+"");
+		return false;
 	});
 
 	page.on("vclick", ".cuisine-image img", function(event) {
 		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
 		$("#fullScreen img").attr("src",$(this).attr("src"));
 		$.mobile.changePage("#fullScreen");
-//		$(this).toggleFullScreen();
+		return false;
 	});
 	page.on("vclick", ".prev-image", function(event) {
 		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
@@ -351,6 +355,7 @@ function addItem(table) {
 			loadImage(itemImage,photo[table][itemData][photoIndex[table][itemData]]);
 			loadImage(pageImage,photo[table][itemData][photoIndex[table][itemData]]);
 		}
+		return false;
 	});
 	page.on("vclick", ".next-image", function(event) {
 		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
@@ -366,8 +371,10 @@ function addItem(table) {
 			loadImage(itemImage,photo[table][itemData][photoIndex[table][itemData]]);
 			loadImage(pageImage,photo[table][itemData][photoIndex[table][itemData]]);
 		}
+		return false;
 	});
 	page.on("vclick", ".take-photo", function(event) {
+		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
 		// capture callback
 		var table = $(this).jqmData("table");
 		var page = $(this).parents("."+table+"-page");
@@ -400,6 +407,7 @@ function addItem(table) {
 		} catch (e) {
 			debugWrite("error",e);
 		}
+		return false;
 	});
 	
 	page.on("vclick", ".planner.release", function(event) {
@@ -458,6 +466,7 @@ function addItem(table) {
 			saveReadyDeferred.resolve();
 		});
 		$.mobile.changePage("#"+diaryId);
+		return false;
 	});
 	
 	return id;
@@ -492,6 +501,7 @@ function addItemCuisine(table,id) {
 		item.addClass("changed");
 		page.addClass("changed");
 		$(this).parents("div."+table+"-cuisine").remove();
+		return false;
 	});
 
 	cuisine.on("change", "select."+table+"-cuisine", function(event) {
@@ -503,6 +513,7 @@ function addItemCuisine(table,id) {
 		var itemData = item.jqmData("data");
 		item.addClass("changed");
 		page.addClass("changed");
+		return false;
 	});
 
 	return cuisine;
@@ -1726,6 +1737,7 @@ $(document).on("pageinit",'#available',function(event){
 		plannerItem.addClass("new");
 		plannerPage.addClass("new");
 		$.mobile.changePage("#"+plannerId);
+		return false;
 	});
 });
 $(document).on("pageinit",'#cuisine',function(event){
@@ -1742,6 +1754,7 @@ $(document).on("pageinit",'#cuisine',function(event){
 		page.addClass("new");
 		$("."+table+"-items.ui-listview").listview("refresh");
 		$.mobile.changePage("#"+id);
+		return false;
 	});
 });
 $(document).on("pageinit",'#diary,#planner',function(event){
@@ -1776,6 +1789,7 @@ $(document).on("pageinit",'#diary,#planner',function(event){
 		cuisine.addClass("new");
 		$("#"+table+" ."+table+"-items.ui-listview").listview("refresh");
 		$.mobile.changePage("#"+id);
+		return false;
 	});
 });
 
@@ -1873,6 +1887,7 @@ tables.forEach(function(value,index) {
 				$("#"+table+"-from-date").val($.format.date(datetime,"yyyy-MM-dd"));
 				$("#"+table+"-to-date").val($.format.date(datetime,"yyyy-MM-dd"));
 				clearQueryUpdateStatus(table);
+				return false;
 			});
 		});
 		
@@ -1880,6 +1895,7 @@ tables.forEach(function(value,index) {
 			if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
 			var table = $(this).jqmData("table");
 			clearQueryUpdateStatus(table);
+			return false;
 		});
 	});
 });
@@ -1902,6 +1918,7 @@ $(document).on("pageinit","#diet", function(event){
 			$("#"+table+"-"+value.id+"-qty").val(value.qty).change();
 			$("#"+table+"-"+value.id+"-period").val(value.period).change();
 		});
+		return false;
 	});
 	$("#"+table+" .save").bind("vclick", function(event,ui) {
 		if (event.preventDefault) { event.preventDefault(); } else { event.returnValue = false; }
@@ -1909,6 +1926,7 @@ $(document).on("pageinit","#diet", function(event){
 		var db = getDatabase();
 		saveItem(table,db,"",function(db) { 
 		});
+		return false;
 	});
 });
 
