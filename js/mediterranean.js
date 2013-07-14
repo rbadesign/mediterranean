@@ -556,20 +556,20 @@ function deleteItem(table,db,id,callback) {
 		)
 	};
 	
-	queries[table].forEach(function(query,index) {
-		var successDelete = function (tx,results) {
-			if (++count==queries[table].length) {
-				callback(db);
-			}
+	var successDelete = function (tx,results) {
+		if (++count==queries[table].length) {
+			callback(db);
 		}
+	}
 
-		var queryDelete = function (tx) {
+	var queryDelete = function (tx) {
+		queries[table].forEach(function(query,index) {
 			debugWrite(query,[itemId[table][itemData]]);
 			tx.executeSql(query,[itemId[table][itemData]], successDelete, StatementErrorCallback);
-		}
-		
-		db.transaction(queryDelete, TransactionErrorCallback);
-	});
+		});
+	}
+	
+	db.transaction(queryDelete, TransactionErrorCallback);
 }
 
 function saveItemCuisines(table,db,id,callback) {
@@ -581,28 +581,27 @@ function saveItemCuisines(table,db,id,callback) {
 	if (count == page.find("select."+table+"-cuisine").length) {
 		callback(db);
 	}
-	page.find("select."+table+"-cuisine").each(function() {
-		var cuisine_id = $(this).val();
 
-		var queryInsert = function (tx) {
+	var successInsert = function (tx, results) {
+		debugWrite('successInsert','start');
+		debugWrite('results',results);
+		if (++count == page.find("select."+table+"-cuisine").length) {
+			callback(db);
+		}
+		debugWrite('successInsert','end');
+	}
+
+	var queryInsert = function (tx) {
 			
-			var successInsert = function (tx, results) {
-				debugWrite('successInsert','start');
-				debugWrite('results',results);
-				if (++count == page.find("select."+table+"-cuisine").length) {
-					callback(db);
-				}
-				debugWrite('successInsert','end');
-			}
-			
+		page.find("select."+table+"-cuisine").each(function() {
+			var cuisine_id = $(this).val();
 			var query =	"INSERT INTO "+table+"_cuisine("+table+"_id,cuisine_id) VALUES (?,?)";
-				
 			debugWrite(query,[itemId[table][itemData],cuisine_id]);
 			tx.executeSql(query,[itemId[table][itemData],cuisine_id], successInsert, StatementErrorCallback);
-		}
+		});
+	}
 		
-		db.transaction(queryInsert, TransactionErrorCallback);
-	});
+	db.transaction(queryInsert, TransactionErrorCallback);
 	debugWrite('saveItemCuisines','end');
 }
 
@@ -618,26 +617,25 @@ function saveItemPhoto(table,db,id,callback) {
 	if (count == photo[table][itemData].length) {
 		callback(db);
 	}
-	photo[table][itemData].forEach(function(value,index) {
-		var queryInsert = function (tx) {
-			
-			var successInsert = function (tx, results) {
-				debugWrite('successInsert','start');
-				debugWrite('results',results);
-				if (++count == photo[table][itemData].length) {
-					callback(db);
-				}
-				debugWrite('successInsert','end');
-			}
-			
+
+	var successInsert = function (tx, results) {
+		debugWrite('successInsert','start');
+		debugWrite('results',results);
+		if (++count == photo[table][itemData].length) {
+			callback(db);
+		}
+		debugWrite('successInsert','end');
+	}
+	
+	var queryInsert = function (tx) {
+		photo[table][itemData].forEach(function(value,index) {
 			var query =	"INSERT INTO "+table+"_photo("+table+"_id,full_path) VALUES (?,?)";
-				
 			debugWrite(query,[itemId[table][itemData],value]);
 			tx.executeSql(query,[itemId[table][itemData],value], successInsert, StatementErrorCallback);
-		}
-		
-		db.transaction(queryInsert, TransactionErrorCallback);
-	});
+		});
+	}
+	
+	db.transaction(queryInsert, TransactionErrorCallback);
 	debugWrite('saveItemPhoto','end');
 }
 
@@ -651,29 +649,26 @@ function saveItemProducts(table,db,id,callback) {
 		callback(db);
 	}
 	
-	page.find("select."+table+"-product").each(function() {
-		var product_id = $(this).jqmData("product-id");
-		var product_qty = $(this).val();
-
-		var queryInsert = function (tx) {
-			
-			var successInsert = function (tx, results) {
-				debugWrite('successInsert','start');
-				debugWrite('results',results);
-				if (++count == page.find("select."+table+"-product").length) {
-					callback(db);
-				}
-				debugWrite('successInsert','end');
-			}
-				
+	var successInsert = function (tx, results) {
+		debugWrite('successInsert','start');
+		debugWrite('results',results);
+		if (++count == page.find("select."+table+"-product").length) {
+			callback(db);
+		}
+		debugWrite('successInsert','end');
+	}
+		
+	var queryInsert = function (tx) {
+		page.find("select."+table+"-product").each(function() {
+			var product_id = $(this).jqmData("product-id");
+			var product_qty = $(this).val();
 			var query = "INSERT INTO "+table+"_product("+table+"_id,product_id,"+table+"_product_qty) VALUES (?,?,?)";
-			
 			debugWrite(query,[itemId[table][itemData],product_id,product_qty]);
 			tx.executeSql(query,[itemId[table][itemData],product_id,product_qty], successInsert, StatementErrorCallback);
-		}
-		
-		db.transaction(queryInsert, TransactionErrorCallback);
-	});
+		});
+	}
+	
+	db.transaction(queryInsert, TransactionErrorCallback);
 	debugWrite('saveItemProducts','end');
 }
 
@@ -688,20 +683,14 @@ function saveItem(table,db,id,callback) {
 		callback(db);
 	});
 		
-	var queryDeletePhoto = function (tx) {
 		
-		var successDeletePhoto = function (tx, results) {
-			debugWrite('successDeletePhoto','start');
-			debugWrite('results',results);
-			saveItemPhoto(table,db, id, function(db) { photoReadyDeferred.resolve(); } );
-			debugWrite('successDeletePhoto','end');
-		}
-		
-		var query =	"DELETE FROM "+table+"_photo WHERE "+table+"_id=?";
-		debugWrite(query,[itemId[table][itemData]]);
-		tx.executeSql(query,[itemId[table][itemData]], successDeletePhoto, StatementErrorCallback);
+	var successDeletePhoto = function (tx, results) {
+		debugWrite('successDeletePhoto','start');
+		debugWrite('results',results);
+		saveItemPhoto(table,db, id, function(db) { photoReadyDeferred.resolve(); } );
+		debugWrite('successDeletePhoto','end');
 	}
-
+		
 	switch(table) {
 	case "diary":
 	case "planner":	
@@ -742,22 +731,20 @@ function saveItem(table,db,id,callback) {
 				debugWrite(query,[datetime,itemId[table][itemData]]);
 				tx.executeSql(query,[datetime,itemId[table][itemData]], successUpdate, StatementErrorCallback);
 				
-				var queryDeleteCuisines = function (tx) {
-					
-					var successDeleteCuisines = function (tx, results) {
-						debugWrite('successDeleteCuisines','start');
-						debugWrite('results',results);
-						saveItemCuisines(table,db, id, function(db) { childrenReadyDeferred.resolve(); } );
-						debugWrite('successDeleteCuisines','end');
-					}
-					
-					var query =	"DELETE FROM "+table+"_cuisine WHERE "+table+"_id=?";
-					debugWrite(query,[itemId[table][itemData]]);
-					tx.executeSql(query,[itemId[table][itemData]], successDeleteCuisines, StatementErrorCallback);
+				var successDeleteCuisines = function (tx, results) {
+					debugWrite('successDeleteCuisines','start');
+					debugWrite('results',results);
+					saveItemCuisines(table,db, id, function(db) { childrenReadyDeferred.resolve(); } );
+					debugWrite('successDeleteCuisines','end');
 				}
 				
-				db.transaction(queryDeleteCuisines, TransactionErrorCallback);
-				db.transaction(queryDeletePhoto, TransactionErrorCallback);
+				var query =	"DELETE FROM "+table+"_cuisine WHERE "+table+"_id=?";
+				debugWrite(query,[itemId[table][itemData]]);
+				tx.executeSql(query,[itemId[table][itemData]], successDeleteCuisines, StatementErrorCallback);
+
+				var query =	"DELETE FROM "+table+"_photo WHERE "+table+"_id=?";
+				debugWrite(query,[itemId[table][itemData]]);
+				tx.executeSql(query,[itemId[table][itemData]], successDeletePhoto, StatementErrorCallback);
 			}
 			
 			db.transaction(queryUpdate, TransactionErrorCallback);
@@ -771,20 +758,17 @@ function saveItem(table,db,id,callback) {
 		var typeId = page.find("#"+table+"-type").val();
 				
 		if (itemId[table][itemData] == -1) {
+			var successInsert = function (tx, results) {
+				debugWrite('successInsert','start');
+				debugWrite('results',results);
+				itemId[table][itemData] = results.insertId;
+				readyDeferred.resolve();
+				saveItemProducts(table,db, id, function(db) { childrenReadyDeferred.resolve(); } );
+				saveItemPhoto(table,db, id, function(db) { photoReadyDeferred.resolve(); } );
+				debugWrite('successInsert','end');
+			}
 			var queryInsert = function (tx) {
-				
-				var successInsert = function (tx, results) {
-					debugWrite('successInsert','start');
-					debugWrite('results',results);
-					itemId[table][itemData] = results.insertId;
-					readyDeferred.resolve();
-					saveItemProducts(table,db, id, function(db) { childrenReadyDeferred.resolve(); } );
-					saveItemPhoto(table,db, id, function(db) { photoReadyDeferred.resolve(); } );
-					debugWrite('successInsert','end');
-				}
-				
 				var query = "INSERT INTO cuisine("+table+"_title,"+table+"_type_id) VALUES (?,?)";
-					
 				debugWrite(query,[title,typeId]);
 				tx.executeSql(query,[title,typeId], successInsert, StatementErrorCallback);
 			}
@@ -802,11 +786,7 @@ function saveItem(table,db,id,callback) {
 				var query = "UPDATE cuisine SET "+table+"_title=?,"+table+"_type_id=? WHERE "+table+"_id=?";
 				debugWrite(query,[title,typeId,itemId[table][itemData]]);
 				tx.executeSql(query,[title,typeId,itemId[table][itemData]], successUpdate, StatementErrorCallback);
-			}
-			
-			db.transaction(queryUpdate, TransactionErrorCallback);
-			
-			var queryDeleteProducts = function (tx) {
+
 				var successDeleteProducts = function (tx, results) {
 					debugWrite('successDeleteProducts','start');
 					debugWrite('results',results);
@@ -817,10 +797,13 @@ function saveItem(table,db,id,callback) {
 				var query = "DELETE FROM "+table+"_product WHERE "+table+"_id=?";
 				debugWrite(query,[itemId[table][itemData]]);
 				tx.executeSql(query,[itemId[table][itemData]], successDeleteProducts, StatementErrorCallback);				
+
+				var query =	"DELETE FROM "+table+"_photo WHERE "+table+"_id=?";
+				debugWrite(query,[itemId[table][itemData]]);
+				tx.executeSql(query,[itemId[table][itemData]], successDeletePhoto, StatementErrorCallback);
 			}
 			
-			db.transaction(queryDeleteProducts, TransactionErrorCallback);
-			db.transaction(queryDeletePhoto, TransactionErrorCallback);
+			db.transaction(queryUpdate, TransactionErrorCallback);
 		}
 		break;
 	case "diet":
@@ -834,31 +817,29 @@ function saveItem(table,db,id,callback) {
 		var queryDelete = function (tx) {
 			
 			var successDelete = function (tx,results) {
-				$("."+table+"-product").each(function() {
-					var item = $(this);
-					var id = item.jqmData("product-id");
-					var qty = item.find("#"+table+"-"+id+"-qty").val();
-					var period = item.find("#"+table+"-"+id+"-period").val();
 					
-					var queryInsert = function (tx) {
-						
-						var successInsert = function (tx, results) {
-							debugWrite('successInsert','start');
-							debugWrite('results',results);
-							if (++count == $("."+table+"-product").length) {
-								childrenReadyDeferred.resolve();
-							}
-							debugWrite('successInsert','end');
-						}
+				var successInsert = function (tx, results) {
+					debugWrite('successInsert','start');
+					debugWrite('results',results);
+					if (++count == $("."+table+"-product").length) {
+						childrenReadyDeferred.resolve();
+					}
+					debugWrite('successInsert','end');
+				}
 							
+				var queryInsert = function (tx) {
+					$("."+table+"-product").each(function() {
+						var item = $(this);
+						var id = item.jqmData("product-id");
+						var qty = item.find("#"+table+"-"+id+"-qty").val();
+						var period = item.find("#"+table+"-"+id+"-period").val();
 						var query = "INSERT INTO "+table+"(product_id,product_qty,product_period_id) VALUES (?,?,?)";
-						
 						debugWrite(query,[id,qty,period]);
 						tx.executeSql(query,[id,qty,period], successInsert, StatementErrorCallback);
-					}
-					
-					db.transaction(queryInsert, TransactionErrorCallback);
-				});
+					});
+				}
+				
+				db.transaction(queryInsert, TransactionErrorCallback);
 			}
 			
 			var query = "DELETE FROM "+table+"";
@@ -923,130 +904,123 @@ function queryItems(table,db,callback) {
 		switch(table) {
 		case "diary":
 		case "planner":
-			var queryRecords = function (tx) {
+			var successRecords = function (tx, results) {
+				debugWrite('successRecords','start');
+				debugWrite('results',results);
+				recordsLength = results.rows.length;
 				
-				var successRecords = function (tx, results) {
-					debugWrite('successRecords','start');
-					debugWrite('results',results);
-					recordsLength = results.rows.length;
-					
-					if (childrenCount==recordsLength) {
-						childrenReadyDeferred.resolve();
-					}
-					if (photoCount==recordsLength) {
-						photoReadyDeferred.resolve();
-					}
-					
-					if (recordsLength) {
-						var table = results.rows.item(0).tbl;
-						for (var i=0; i<recordsLength; i++){
-							if(itemId[table].indexOf(results.rows.item(i).id)==-1) {
-								var table = results.rows.item(i).tbl;
-								var id = addItem(table);
-								debugWrite("table",table);
-								debugWrite("id",id);
-								var page = $("."+table+"-page#"+id);
-								var item = $("."+table+"-item#"+id);
-								var itemData = item.jqmData("data");
-								var itemImage = item.find("img#item-image");
-								var pageImage = page.find("img#cuisine-image");
-								itemId[table][itemData] = results.rows.item(i).id;
-								var datetime = new Date(results.rows.item(i).cuisine_datetime);
-								page.find("#cuisine-date").val($.format.date(datetime,"yyyy-MM-dd"));
-								page.find("#cuisine-time").val($.format.date(datetime,"HH:mm"));
-								var title = $.format.date(datetime,"yyyy-MM-dd HH:mm")
-								item.find("#item-title").text(title);
-								setStatus(table,id,"time");
-								queryStatus(table,db,id);
-	
-								var queryChildren = function (tx) {
-									debugWrite('queryChildren','start');
-									debugWrite("table",table);
-									debugWrite("id",id);
-									
-									var successChildren = function (tx, results) {
-										debugWrite('successChildren','start');
-										var len = results.rows.length;
-										if(len) {
-											var titles = Array()
-											var table = results.rows.item(0).tbl;
-											var id = getId(results.rows.item(0).tbl,results.rows.item(0).id);
-											debugWrite('table',table);
-											debugWrite('id',id);
-											var page = $("."+table+"-page#"+id);
-											var item = $("."+table+"-item#"+id);
-											var itemData = item.jqmData("data");
-											for (var i=0; i<len; i++){
-												titles.push(results.rows.item(i).cuisine_title);
-												var table = results.rows.item(i).tbl;
-												var id = getId(results.rows.item(i).tbl,results.rows.item(i).id);
-												var cuisine = addItemCuisine(table,id);
-												cuisine.find("select.cuisine-type").val(results.rows.item(i).cuisine_type_id);
-												cuisine.find("select."+table+"-cuisine").val(results.rows.item(i).cuisine_id);
-			//									querySame("cuisine",db,$("select."+table+"-cuisine",cuisine),results.rows.item(i).cuisine_type_id,function (db) {
-			//									});
-											}
-											item.find("#item-desc").text(titles.join(","));
-										}
-										if (++childrenCount==recordsLength) {
-											childrenReadyDeferred.resolve();
-										}
-										debugWrite('successChildren','end');
+				if (childrenCount==recordsLength) {
+					childrenReadyDeferred.resolve();
+				}
+				if (photoCount==recordsLength) {
+					photoReadyDeferred.resolve();
+				}
+				
+				if (recordsLength) {
+					var table = results.rows.item(0).tbl;
+					for (var i=0; i<recordsLength; i++){
+						if(itemId[table].indexOf(results.rows.item(i).id)==-1) {
+							var table = results.rows.item(i).tbl;
+							var id = addItem(table);
+							debugWrite("table",table);
+							debugWrite("id",id);
+							var page = $("."+table+"-page#"+id);
+							var item = $("."+table+"-item#"+id);
+							var itemData = item.jqmData("data");
+							var itemImage = item.find("img#item-image");
+							var pageImage = page.find("img#cuisine-image");
+							itemId[table][itemData] = results.rows.item(i).id;
+							var datetime = new Date(results.rows.item(i).cuisine_datetime);
+							page.find("#cuisine-date").val($.format.date(datetime,"yyyy-MM-dd"));
+							page.find("#cuisine-time").val($.format.date(datetime,"HH:mm"));
+							var title = $.format.date(datetime,"yyyy-MM-dd HH:mm")
+							item.find("#item-title").text(title);
+							setStatus(table,id,"time");
+							queryStatus(table,db,id);
+
+							var successChildren = function (tx, results) {
+								debugWrite('successChildren','start');
+								var len = results.rows.length;
+								if(len) {
+									var titles = Array()
+									var table = results.rows.item(0).tbl;
+									var id = getId(results.rows.item(0).tbl,results.rows.item(0).id);
+									debugWrite('table',table);
+									debugWrite('id',id);
+									var page = $("."+table+"-page#"+id);
+									var item = $("."+table+"-item#"+id);
+									var itemData = item.jqmData("data");
+									for (var i=0; i<len; i++){
+										titles.push(results.rows.item(i).cuisine_title);
+										var table = results.rows.item(i).tbl;
+										var id = getId(results.rows.item(i).tbl,results.rows.item(i).id);
+										var cuisine = addItemCuisine(table,id);
+										cuisine.find("select.cuisine-type").val(results.rows.item(i).cuisine_type_id);
+										cuisine.find("select."+table+"-cuisine").val(results.rows.item(i).cuisine_id);
+	//									querySame("cuisine",db,$("select."+table+"-cuisine",cuisine),results.rows.item(i).cuisine_type_id,function (db) {
+	//									});
 									}
-										
-									var query = "SELECT '"+table+"' AS tbl,"+table+"_id AS id,cuisine.cuisine_id,cuisine_type_id,cuisine_title FROM "+table+"_cuisine JOIN cuisine ON "+table+"_cuisine.cuisine_id=cuisine.cuisine_id WHERE "+table+"_id=?";
-									
-									var args = queryChildrenArgs.pop();
-									debugWrite(query,args);
-									tx.executeSql(query, args, successChildren, StatementErrorCallback);
-									
-									debugWrite('queryChildren','end');
+									item.find("#item-desc").text(titles.join(","));
 								}
-								
-								queryChildrenArgs.push([itemId[table][itemData]]);
-								db.transaction(queryChildren, TransactionErrorCallback);
-						
-								var queryPhoto = function (tx) {									
-									debugWrite('queryPhoto','start');
-									debugWrite("table",table);
-									
-									var query = "SELECT '"+table+"' AS tbl,"+table+"_id AS id,* FROM "+table+"_photo WHERE "+table+"_id=?";
-									var args = queryPhotoArgs.pop();
-									debugWrite(query,args);
-									tx.executeSql(query, args, successPhoto, StatementErrorCallback);
-									
-									debugWrite('queryPhoto','end');
-								}
-								
-								queryPhotoArgs.push([itemId[table][itemData]]);
-								db.transaction(queryPhoto, TransactionErrorCallback);
-							} else {
-								var table = results.rows.item(i).tbl;
-								var id = getId(results.rows.item(i).tbl,results.rows.item(i).id);
-								debugWrite("table",table);
-								debugWrite("id",id);
-								setStatus(table,id,"time");
-								queryStatus(table,db,id);
-								queryDesc(table,db,id);							
 								if (++childrenCount==recordsLength) {
 									childrenReadyDeferred.resolve();
 								}
-								if (++photoCount==recordsLength) {
-									photoReadyDeferred.resolve();
-								}
+								debugWrite('successChildren','end');
+							}
+							
+							var queryChildren = function (tx) {
+								debugWrite('queryChildren','start');
+								debugWrite("table",table);
+								debugWrite("id",id);
+								var query = "SELECT '"+table+"' AS tbl,"+table+"_id AS id,cuisine.cuisine_id,cuisine_type_id,cuisine_title FROM "+table+"_cuisine JOIN cuisine ON "+table+"_cuisine.cuisine_id=cuisine.cuisine_id WHERE "+table+"_id=?";
+								var args = queryChildrenArgs.pop();
+								debugWrite(query,args);
+								tx.executeSql(query, args, successChildren, StatementErrorCallback);
+								debugWrite('queryChildren','end');
+							}
+							
+							queryChildrenArgs.push([itemId[table][itemData]]);
+							db.transaction(queryChildren, TransactionErrorCallback);
+					
+							var queryPhoto = function (tx) {									
+								debugWrite('queryPhoto','start');
+								debugWrite("table",table);
+								var query = "SELECT '"+table+"' AS tbl,"+table+"_id AS id,* FROM "+table+"_photo WHERE "+table+"_id=?";
+								var args = queryPhotoArgs.pop();
+								debugWrite(query,args);
+								tx.executeSql(query, args, successPhoto, StatementErrorCallback);
+								debugWrite('queryPhoto','end');
+							}
+							
+							queryPhotoArgs.push([itemId[table][itemData]]);
+							db.transaction(queryPhoto, TransactionErrorCallback);
+						} else {
+							var table = results.rows.item(i).tbl;
+							var id = getId(results.rows.item(i).tbl,results.rows.item(i).id);
+							debugWrite("table",table);
+							debugWrite("id",id);
+							setStatus(table,id,"time");
+							queryStatus(table,db,id);
+							queryDesc(table,db,id);							
+							if (++childrenCount==recordsLength) {
+								childrenReadyDeferred.resolve();
+							}
+							if (++photoCount==recordsLength) {
+								photoReadyDeferred.resolve();
 							}
 						}
 					}
-					
-					readyDeferred.resolve();
-					
-					debugWrite('successRecords','end');
 				}
 				
+				readyDeferred.resolve();
+				
+				debugWrite('successRecords','end');
+			}
+				
+			var queryRecords = function (tx) {
 				var from_datetime = parseDate($("#"+table+"-from-date").val()).getTime();
 				var to_datetime = parseDate($("#"+table+"-to-date").val()).getTime();
 				var query = "SELECT '"+table+"' AS tbl,"+table+"_id AS id,* FROM "+table+" WHERE cuisine_datetime BETWEEN ? AND ? ORDER BY cuisine_datetime DESC";
-				
 				debugWrite(query,[from_datetime,to_datetime+24*60*60*1000]);
 				tx.executeSql(query, [from_datetime,to_datetime+24*60*60*1000], successRecords, StatementErrorCallback);
 			}
@@ -1054,131 +1028,123 @@ function queryItems(table,db,callback) {
 			db.transaction(queryRecords, TransactionErrorCallback);
 			break;
 		case "cuisine":
-			var querySelect = function (tx) {
+			var successSelect = function (tx, results) {
+				debugWrite('successSelect','start');
+				debugWrite('results',results);
+				recordsLength = results.rows.length;
 				
-				var successSelect = function (tx, results) {
-					debugWrite('successSelect','start');
-					debugWrite('results',results);
-					recordsLength = results.rows.length;
-					
-					if (childrenCount==recordsLength) {
-						childrenReadyDeferred.resolve();
-					}
-					if (photoCount==recordsLength) {
-						photoReadyDeferred.resolve();
-					}
-					
-					if (recordsLength) {
-						var table = results.rows.item(0).tbl;
-						debugWrite('table',table);
-						for (var i=0; i<recordsLength; i++){
-							if(itemId[table].indexOf(results.rows.item(i).id)==-1) {
-								var table = results.rows.item(i).tbl;
-								var id = addItem(table);
-								debugWrite("table",table);
-								debugWrite("id",id);
-								var page = $("."+table+"-page#"+id);
-								var item = $("."+table+"-item#"+id);
-								var itemData = item.jqmData("data");
-								var itemImage = item.find("img#item-image");
-								var pageImage = page.find("img#cuisine-image");
-								itemId[table][itemData] = results.rows.item(i).id;
-								var title = results.rows.item(i).cuisine_title;
-								var type = results.rows.item(i).cuisine_type_id;
-								page.find("#"+table+"-title").val(title);
-								page.find("#"+table+"-type").val(type);
-								item.find("#item-title").text(title)
-								setStatus(table,id,"dialog-clean");
+				if (childrenCount==recordsLength) {
+					childrenReadyDeferred.resolve();
+				}
+				if (photoCount==recordsLength) {
+					photoReadyDeferred.resolve();
+				}
 				
-								var option = "<option data-placeholder='false' value='"+itemId[table][itemData]+"'>"+title+"</option>";
-								$("select.diary-"+table+",select.planner-"+table+"").append(option);
-	
-								var queryChildren = function (tx) {
-									debugWrite('queryChildren','start');
-									debugWrite("table",table);
-									debugWrite("id",id);
-									
-									var successChildren = function (tx, results) {
-										debugWrite('successChildren','start');
-										debugWrite('results',results);
-										var titles = Array()
-										var len = results.rows.length;
-										if(len) {
-											var titles = Array()
-											var table = results.rows.item(0).tbl;
-											var id = getId(results.rows.item(0).tbl,results.rows.item(0).id);
-											debugWrite('table',table);
-											debugWrite('id',id);
-											var page = $("."+table+"-page#"+id);
-											var item = $("."+table+"-item#"+id);
-											var itemData = item.jqmData("data");
-											for (var i=0; i<len; i++){
-												if (results.rows.item(i).cuisine_product_qty) {
-													titles.push(results.rows.item(i).product_title);
-												}
-												page.find("#"+table+"-"+results.rows.item(i).product_id).val(results.rows.item(i).cuisine_product_qty);
-											}
-											item.find("#item-desc").text(titles.join(","));
-										}
-										if (++childrenCount==recordsLength) {
-											childrenReadyDeferred.resolve();
-										}
-										debugWrite('successChildren','end');
-									}
-									
-									var query =	"SELECT '"+table+"' AS tbl,"+table+"_id AS id,"+table+"_product.product_id,product_title,"+table+"_product_qty FROM "+table+"_product JOIN diet ON "+table+"_product.product_id=diet.product_id WHERE "+table+"_id=?";
-									
-									var args = queryChildrenArgs.pop();
-									debugWrite(query,args);
-									tx.executeSql(query, args, successChildren, StatementErrorCallback);
-									
-									debugWrite('queryChildren','end');
-								}
-								
-								queryChildrenArgs.push([itemId[table][itemData]]);
-								db.transaction(queryChildren, TransactionErrorCallback);	
-								
-								var queryPhoto = function (tx) {
-									debugWrite('queryPhoto','start');
-									debugWrite("table",table);
-									debugWrite("id",id);
-																	
-									var query = "SELECT '"+table+"' AS tbl,"+table+"_id AS id,* FROM "+table+"_photo WHERE "+table+"_id=?";
-									
-									var args = queryPhotoArgs.pop();
-									debugWrite(query,args);
-									tx.executeSql(query, args, successPhoto, StatementErrorCallback);
+				if (recordsLength) {
+					var table = results.rows.item(0).tbl;
+					debugWrite('table',table);
+					for (var i=0; i<recordsLength; i++){
+						if(itemId[table].indexOf(results.rows.item(i).id)==-1) {
+							var table = results.rows.item(i).tbl;
+							var id = addItem(table);
+							debugWrite("table",table);
+							debugWrite("id",id);
+							var page = $("."+table+"-page#"+id);
+							var item = $("."+table+"-item#"+id);
+							var itemData = item.jqmData("data");
+							var itemImage = item.find("img#item-image");
+							var pageImage = page.find("img#cuisine-image");
+							itemId[table][itemData] = results.rows.item(i).id;
+							var title = results.rows.item(i).cuisine_title;
+							var type = results.rows.item(i).cuisine_type_id;
+							page.find("#"+table+"-title").val(title);
+							page.find("#"+table+"-type").val(type);
+							item.find("#item-title").text(title)
+							setStatus(table,id,"dialog-clean");
+			
+							var option = "<option data-placeholder='false' value='"+itemId[table][itemData]+"'>"+title+"</option>";
+							$("select.diary-"+table+",select.planner-"+table+"").append(option);
 
-									debugWrite('queryPhoto','end');
+							var successChildren = function (tx, results) {
+								debugWrite('successChildren','start');
+								debugWrite('results',results);
+								var titles = Array()
+								var len = results.rows.length;
+								if(len) {
+									var titles = Array()
+									var table = results.rows.item(0).tbl;
+									var id = getId(results.rows.item(0).tbl,results.rows.item(0).id);
+									debugWrite('table',table);
+									debugWrite('id',id);
+									var page = $("."+table+"-page#"+id);
+									var item = $("."+table+"-item#"+id);
+									var itemData = item.jqmData("data");
+									for (var i=0; i<len; i++){
+										if (results.rows.item(i).cuisine_product_qty) {
+											titles.push(results.rows.item(i).product_title);
+										}
+										page.find("#"+table+"-"+results.rows.item(i).product_id).val(results.rows.item(i).cuisine_product_qty);
+									}
+									item.find("#item-desc").text(titles.join(","));
 								}
-								
-								queryPhotoArgs.push([itemId[table][itemData]]);
-								db.transaction(queryPhoto, TransactionErrorCallback);
-							} else {
-								var table = results.rows.item(i).tbl;
-								var id = getId(results.rows.item(i).tbl,results.rows.item(i).id);
-								debugWrite("table",table);
-								debugWrite("id",id);
-								setStatus(table,id,"time");
-								queryStatus(table,db,id);
-								queryDesc(table,db,id);							
 								if (++childrenCount==recordsLength) {
 									childrenReadyDeferred.resolve();
 								}
-								if (++photoCount==recordsLength) {
-									photoReadyDeferred.resolve();
-								}
+								debugWrite('successChildren','end');
+							}
+
+							var queryChildren = function (tx) {
+								debugWrite('queryChildren','start');
+								debugWrite("table",table);
+								debugWrite("id",id);
+								var query =	"SELECT '"+table+"' AS tbl,"+table+"_id AS id,"+table+"_product.product_id,product_title,"+table+"_product_qty FROM "+table+"_product JOIN diet ON "+table+"_product.product_id=diet.product_id WHERE "+table+"_id=?";
+								var args = queryChildrenArgs.pop();
+								debugWrite(query,args);
+								tx.executeSql(query, args, successChildren, StatementErrorCallback);
+								debugWrite('queryChildren','end');
+							}
+							
+							queryChildrenArgs.push([itemId[table][itemData]]);
+							db.transaction(queryChildren, TransactionErrorCallback);	
+							
+							var queryPhoto = function (tx) {
+								debugWrite('queryPhoto','start');
+								debugWrite("table",table);
+								debugWrite("id",id);
+								var query = "SELECT '"+table+"' AS tbl,"+table+"_id AS id,* FROM "+table+"_photo WHERE "+table+"_id=?";
+								var args = queryPhotoArgs.pop();
+								debugWrite(query,args);
+								tx.executeSql(query, args, successPhoto, StatementErrorCallback);
+								debugWrite('queryPhoto','end');
+							}
+							
+							queryPhotoArgs.push([itemId[table][itemData]]);
+							db.transaction(queryPhoto, TransactionErrorCallback);
+						} else {
+							var table = results.rows.item(i).tbl;
+							var id = getId(results.rows.item(i).tbl,results.rows.item(i).id);
+							debugWrite("table",table);
+							debugWrite("id",id);
+							setStatus(table,id,"time");
+							queryStatus(table,db,id);
+							queryDesc(table,db,id);							
+							if (++childrenCount==recordsLength) {
+								childrenReadyDeferred.resolve();
+							}
+							if (++photoCount==recordsLength) {
+								photoReadyDeferred.resolve();
 							}
 						}
 					}
-					
-					readyDeferred.resolve();
-					
-					debugWrite('successSelect','end');
 				}
 				
-				var query =	"SELECT '"+table+"' AS tbl,"+table+"_id AS id,* FROM "+table+"";	
+				readyDeferred.resolve();
 				
+				debugWrite('successSelect','end');
+			}
+				
+			var querySelect = function (tx) {
+				var query =	"SELECT '"+table+"' AS tbl,"+table+"_id AS id,* FROM "+table+"";	
 				debugWrite(query,[]);
 				tx.executeSql(query, [], successSelect, StatementErrorCallback);
 			}
@@ -1186,26 +1152,24 @@ function queryItems(table,db,callback) {
 			db.transaction(querySelect, TransactionErrorCallback);
 			break;
 		case "diet":
-			var querySelect = function (tx) {
-				
-				var successSelect = function (tx, results) {
-					debugWrite('successSelect','start');
-					debugWrite('results',results);
-					var len = results.rows.length;
-					for (var i=0; i<len; i++){
-						var table = results.rows.item(i).tbl;
-						debugWrite('table',table);
-						$("#"+table+"-"+results.rows.item(i).product_id+"-qty").val(results.rows.item(i).product_qty).change();
-						$("#"+table+"-"+results.rows.item(i).product_id+"-period").val(results.rows.item(i).product_period_id).change();
-					}
-					readyDeferred.resolve();
-					childrenReadyDeferred.resolve();
-					photoReadyDeferred.resolve();
-					debugWrite('successSelect','end');
+			var successSelect = function (tx, results) {
+				debugWrite('successSelect','start');
+				debugWrite('results',results);
+				var len = results.rows.length;
+				for (var i=0; i<len; i++){
+					var table = results.rows.item(i).tbl;
+					debugWrite('table',table);
+					$("#"+table+"-"+results.rows.item(i).product_id+"-qty").val(results.rows.item(i).product_qty).change();
+					$("#"+table+"-"+results.rows.item(i).product_id+"-period").val(results.rows.item(i).product_period_id).change();
 				}
-					
+				readyDeferred.resolve();
+				childrenReadyDeferred.resolve();
+				photoReadyDeferred.resolve();
+				debugWrite('successSelect','end');
+			}
+			
+			var querySelect = function (tx) {
 				var query = "SELECT '"+table+"' AS tbl,* FROM "+table+"";
-				
 				debugWrite(query,[]);
 				tx.executeSql(query, [], successSelect, StatementErrorCallback);
 			}
@@ -1216,44 +1180,44 @@ function queryItems(table,db,callback) {
 			var datetime = parseDate($("#"+table+"-date").val()).getTime();
 			debugWrite("datetime",datetime);
 			
-			var querySelect = function (tx) {
-				var successSelect = function (tx, results) {
-					debugWrite('successSelect','start');
-					debugWrite('results',results);
-					debugWrite('results.rows',results.rows);
-					var product_id = Array();
-					var product_qty = Array();
-					var product_max = Array();
-					var len = results.rows.length;
-					var table = results.rows.item(0).tbl;
-					debugWrite('table',table);
-					for (var i=0; i<len; i++){
-						var index = product_id.indexOf(results.rows.item(i).product_id);
-						if (index == -1) {
-							product_id.push(results.rows.item(i).product_id);
-							product_qty.push(results.rows.item(i).product_qty);
-							product_max.push(results.rows.item(i).product_max);
-						} else {
-							product_qty[index] += results.rows.item(i).product_qty;
-							product_max[index] += results.rows.item(i).product_max;
-						}
+			var successSelect = function (tx, results) {
+				debugWrite('successSelect','start');
+				debugWrite('results',results);
+				debugWrite('results.rows',results.rows);
+				var product_id = Array();
+				var product_qty = Array();
+				var product_max = Array();
+				var len = results.rows.length;
+				var table = results.rows.item(0).tbl;
+				debugWrite('table',table);
+				for (var i=0; i<len; i++){
+					var index = product_id.indexOf(results.rows.item(i).product_id);
+					if (index == -1) {
+						product_id.push(results.rows.item(i).product_id);
+						product_qty.push(results.rows.item(i).product_qty);
+						product_max.push(results.rows.item(i).product_max);
+					} else {
+						product_qty[index] += results.rows.item(i).product_qty;
+						product_max[index] += results.rows.item(i).product_max;
 					}
-					
-					product_qty.forEach(function(value,index) {
-						if (value<0) product_qty[index]=0;
-					});
-			
-					$("."+table+"-product input[id^='"+table+"']").val(0);
-					product_qty.forEach(function(value,index) {
-						$("#"+table+"-"+product_id[index]).attr("max",product_max[index]).val(product_qty[index]);
-						debugWrite($("#"+table+"-"+product_id[index]),product_qty[index]);
-					});
-					readyDeferred.resolve();
-					childrenReadyDeferred.resolve();
-					photoReadyDeferred.resolve();
-					debugWrite('successSelect','end');
 				}
 				
+				product_qty.forEach(function(value,index) {
+					if (value<0) product_qty[index]=0;
+				});
+		
+				$("."+table+"-product input[id^='"+table+"']").val(0);
+				product_qty.forEach(function(value,index) {
+					$("#"+table+"-"+product_id[index]).attr("max",product_max[index]).val(product_qty[index]);
+					debugWrite($("#"+table+"-"+product_id[index]),product_qty[index]);
+				});
+				readyDeferred.resolve();
+				childrenReadyDeferred.resolve();
+				photoReadyDeferred.resolve();
+				debugWrite('successSelect','end');
+			}
+			
+			var querySelect = function (tx) {
 				var query = "SELECT '"+table+"' AS tbl,product_id,product_qty,product_qty AS product_max FROM diet";
 				["diary","planner"].forEach(function(value,index) {
 					query += " UNION ALL"
@@ -1265,7 +1229,6 @@ function queryItems(table,db,callback) {
 					+" WHERE "+value+".cuisine_datetime BETWEEN ?-periods.period_delay AND ?"
 					+" GROUP BY cuisine_product.product_id";
 				});
-				
 				debugWrite(query,[datetime+24*60*60*1000,datetime+24*60*60*1000,datetime+24*60*60*1000,datetime+24*60*60*1000]);
 				tx.executeSql(query,[datetime+24*60*60*1000,datetime+24*60*60*1000,datetime+24*60*60*1000,datetime+24*60*60*1000], successSelect, StatementErrorCallback);
 			}
@@ -1276,105 +1239,103 @@ function queryItems(table,db,callback) {
 			var datetime = parseDate($("#"+table+"-date").val()).getTime();
 			debugWrite("datetime",datetime);
 			
-			var querySelect = function (tx) {
-				var successSelect = function (tx, results) {
-					debugWrite('successSelect','start');
-					debugWrite('results',results);
-					debugWrite('results.rows',results.rows);
-					var product_id = Array();
-					var product_qty = Array();
-					var len = results.rows.length;
-					if (len) {
-						var table = results.rows.item(0).tbl;
-						for (var i=0; i<len; i++){
-							var index = product_id.indexOf(results.rows.item(i).product_id);
-							if (index == -1) {
-								product_id.push(results.rows.item(i).product_id);
-								product_qty.push(results.rows.item(i).product_qty);
-							} else {
-								product_qty[index] += results.rows.item(i).product_qty;
-							}
+			var successSelect = function (tx, results) {
+				debugWrite('successSelect','start');
+				debugWrite('results',results);
+				debugWrite('results.rows',results.rows);
+				var product_id = Array();
+				var product_qty = Array();
+				var len = results.rows.length;
+				if (len) {
+					var table = results.rows.item(0).tbl;
+					for (var i=0; i<len; i++){
+						var index = product_id.indexOf(results.rows.item(i).product_id);
+						if (index == -1) {
+							product_id.push(results.rows.item(i).product_id);
+							product_qty.push(results.rows.item(i).product_qty);
+						} else {
+							product_qty[index] += results.rows.item(i).product_qty;
 						}
-						
-						product_qty.forEach(function(value,index) {
-							if (value<0) product_qty[index]=0;
-						});
-				
-						var successSelectCuisine = function (tx, results) {
-							debugWrite('successSelectCuisine','start');
-							debugWrite('results',results);
-							var cuisine_id = Array();
-							var len = results.rows.length;
-							if (len) {
-								var table = results.rows.item(0).tbl;
-								debugWrite('table',table);
-								for (var i=0; i<len; i++){
-									cuisine_id.push(results.rows.item(i).cuisine_id);
+					}
+					
+					product_qty.forEach(function(value,index) {
+						if (value<0) product_qty[index]=0;
+					});
+			
+					var successSelectCuisine = function (tx, results) {
+						debugWrite('successSelectCuisine','start');
+						debugWrite('results',results);
+						var cuisine_id = Array();
+						var len = results.rows.length;
+						if (len) {
+							var table = results.rows.item(0).tbl;
+							debugWrite('table',table);
+							for (var i=0; i<len; i++){
+								cuisine_id.push(results.rows.item(i).cuisine_id);
+							}
+							
+							if(product_id.length) {
+								var querySelectCuisine = function (tx) {
+									var query = "SELECT '"+table+"' AS tbl,cuisine_id FROM cuisine_product"
+									+" WHERE cuisine_id IN("+cuisine_id.join(",")+")"
+									+" AND product_id=?"
+									+" AND cuisine_product_qty<=?";
+									var id = product_id.pop();
+									var qty = product_qty.pop();
+									debugWrite(query,[id,qty]);
+									tx.executeSql(query, [id,qty], successSelectCuisine, StatementErrorCallback);
 								}
 								
-								if(product_id.length) {
-									var querySelectCuisine = function (tx) {
-										var query = "SELECT '"+table+"' AS tbl,cuisine_id FROM cuisine_product"
-										+" WHERE cuisine_id IN("+cuisine_id.join(",")+")"
-										+" AND product_id=?"
-										+" AND cuisine_product_qty<=?";
-										var id = product_id.pop();
-										var qty = product_qty.pop();
-										debugWrite(query,[id,qty]);
-										tx.executeSql(query, [id,qty], successSelectCuisine, StatementErrorCallback);
+								db.transaction(querySelectCuisine, TransactionErrorCallback);
+							} else {
+								var querySelectAvailable = function (tx) {
+									
+									var successSelectAvailable = function (tx, results) {
+										debugWrite('successSelectAvailable','start');
+										debugWrite('results',results);
+										var len = results.rows.length;
+										for (var i=0; i<len; i++){
+											var table = results.rows.item(i).tbl;
+											debugWrite('table',table);
+											var item = $("."+table+"-cuisine-template").clone();
+											item.jqmData("cuisine-id",results.rows.item(i).cuisine_id);
+											item.find("."+table+"-cuisine-id").removeClass(""+table+"-cuisine-id").addClass(""+table+"-"+results.rows.item(i).cuisine_id);
+											item.find("#"+table+"-cuisine-id").attr("id", ""+table+"-"+results.rows.item(i).cuisine_id).attr("name", ""+table+"-"+results.rows.item(i).cuisine_id);
+											item.find("label[for='"+table+"-cuisine-id']").attr("for",""+table+"-"+results.rows.item(i).cuisine_id).text(results.rows.item(i).cuisine_title);
+											item.appendTo("#"+table+"-cuisine").removeClass(""+table+"-cuisine-template").addClass(""+table+"-cuisine");
+											item.find("[data-role='none']").removeAttr("data-role");
+										}
+										readyDeferred.resolve();
+										childrenReadyDeferred.resolve();
+										photoReadyDeferred.resolve();
+										debugWrite('successSelectAvailable','end');
 									}
 									
-									db.transaction(querySelectCuisine, TransactionErrorCallback);
-								} else {
-									var querySelectAvailable = function (tx) {
-										
-										var successSelectAvailable = function (tx, results) {
-											debugWrite('successSelectAvailable','start');
-											debugWrite('results',results);
-											var len = results.rows.length;
-											for (var i=0; i<len; i++){
-												var table = results.rows.item(i).tbl;
-												debugWrite('table',table);
-												var item = $("."+table+"-cuisine-template").clone();
-												item.jqmData("cuisine-id",results.rows.item(i).cuisine_id);
-												item.find("."+table+"-cuisine-id").removeClass(""+table+"-cuisine-id").addClass(""+table+"-"+results.rows.item(i).cuisine_id);
-												item.find("#"+table+"-cuisine-id").attr("id", ""+table+"-"+results.rows.item(i).cuisine_id).attr("name", ""+table+"-"+results.rows.item(i).cuisine_id);
-												item.find("label[for='"+table+"-cuisine-id']").attr("for",""+table+"-"+results.rows.item(i).cuisine_id).text(results.rows.item(i).cuisine_title);
-												item.appendTo("#"+table+"-cuisine").removeClass(""+table+"-cuisine-template").addClass(""+table+"-cuisine");
-												item.find("[data-role='none']").removeAttr("data-role");
-											}
-											readyDeferred.resolve();
-											childrenReadyDeferred.resolve();
-											photoReadyDeferred.resolve();
-											debugWrite('successSelectAvailable','end');
-										}
-										
-										var query = "SELECT '"+table+"' AS tbl,* FROM cuisine"
-										+" WHERE cuisine_id IN("+cuisine_id.join(",")+")";
-										
-										debugWrite(query,[]);
-										tx.executeSql(query, [], successSelectAvailable, StatementErrorCallback);
-									}
-									db.transaction(querySelectAvailable, TransactionErrorCallback);
+									var query = "SELECT '"+table+"' AS tbl,* FROM cuisine"
+									+" WHERE cuisine_id IN("+cuisine_id.join(",")+")";
+									
+									debugWrite(query,[]);
+									tx.executeSql(query, [], successSelectAvailable, StatementErrorCallback);
 								}
+								db.transaction(querySelectAvailable, TransactionErrorCallback);
 							}
-							debugWrite('successSelectCuisine','end');
 						}
+						debugWrite('successSelectCuisine','end');
 					}
-				
-					var querySelectCuisine = function (tx) {
-						
-						var query = "SELECT '"+table+"' AS tbl,cuisine_id FROM cuisine";
-						
-						debugWrite(query,[]);
-						tx.executeSql(query, [], successSelectCuisine, StatementErrorCallback);
-					}
-					
-					db.transaction(querySelectCuisine, TransactionErrorCallback);
-					
-					debugWrite('successSelect','end');
+				}
+			
+				var querySelectCuisine = function (tx) {
+					var query = "SELECT '"+table+"' AS tbl,cuisine_id FROM cuisine";
+					debugWrite(query,[]);
+					tx.executeSql(query, [], successSelectCuisine, StatementErrorCallback);
 				}
 				
+				db.transaction(querySelectCuisine, TransactionErrorCallback);
+				
+				debugWrite('successSelect','end');
+			}
+				
+			var querySelect = function (tx) {
 				var query = "SELECT '"+table+"' AS tbl,product_id,product_qty FROM diet";
 				["diary","planner"].forEach(function(value,index) {
 					query += " UNION ALL"
@@ -1448,31 +1409,31 @@ function queryStatus(table,db,id) {
 		$("."+table+"-items.ui-listview").listview("refresh");
 	});
 				
-	var querySelectAvailable = function (tx) {
-		var successSelectAvailable = function (tx, results) {
-			debugWrite('successSelectAvailable','start');
-			debugWrite('results',results);
-			debugWrite('results.rows',results.rows);
-			var len = results.rows.length;
-			for (var i=0; i<len; i++){
-				var index = available_id.indexOf(results.rows.item(i).product_id);
-				if (index == -1) {
-					available_id.push(results.rows.item(i).product_id);
-					available_qty.push(results.rows.item(i).product_qty);
-				} else {
-					available_qty[index] += results.rows.item(i).product_qty;
-				}
+	var successSelectAvailable = function (tx, results) {
+		debugWrite('successSelectAvailable','start');
+		debugWrite('results',results);
+		debugWrite('results.rows',results.rows);
+		var len = results.rows.length;
+		for (var i=0; i<len; i++){
+			var index = available_id.indexOf(results.rows.item(i).product_id);
+			if (index == -1) {
+				available_id.push(results.rows.item(i).product_id);
+				available_qty.push(results.rows.item(i).product_qty);
+			} else {
+				available_qty[index] += results.rows.item(i).product_qty;
 			}
-			
-			available_qty.forEach(function(value,index) {
-				if (value<0) available_qty[index]=0;
-			});
-			
-			availableReadyDeferred.resolve();
-			
-			debugWrite('successSelectAvailable','end');
 		}
 		
+		available_qty.forEach(function(value,index) {
+			if (value<0) available_qty[index]=0;
+		});
+		
+		availableReadyDeferred.resolve();
+		
+		debugWrite('successSelectAvailable','end');
+	}
+	
+	var querySelectAvailable = function (tx) {
 		var query = "SELECT '"+table+"' AS tbl,product_id,product_qty FROM diet"
 		+" UNION ALL"
 		+" SELECT '"+table+"' AS tbl,cuisine_product.product_id AS product_id,-SUM(cuisine_product_qty) AS product_qty FROM cuisine_product"
@@ -1491,39 +1452,37 @@ function queryStatus(table,db,id) {
 		+" WHERE "+table+".cuisine_datetime BETWEEN ?-periods.period_delay AND ?"
 		+" AND "+table+"."+table+"_id<>?"
 		+" GROUP BY cuisine_product.product_id";
-		
 		debugWrite(query,[datetime,datetime,datetime,datetime,itemId[table][itemData]]);
 		tx.executeSql(query,[datetime,datetime,datetime,datetime,itemId[table][itemData]], successSelectAvailable, StatementErrorCallback);
 	}
 	
 	db.transaction(querySelectAvailable, TransactionErrorCallback);
 
-	var querySelectProduct = function (tx) {
-		var successSelectProduct = function (tx, results) {
-			debugWrite('successSelectProduct','start');
-			debugWrite('results',results);
-			debugWrite('results.rows',results.rows);
-			var len = results.rows.length;
-			for (var i=0; i<len; i++){
-				var index = product_id.indexOf(results.rows.item(i).product_id);
-				if (index == -1) {
-					product_id.push(results.rows.item(i).product_id);
-					product_qty.push(results.rows.item(i).product_qty);
-				} else {
-					product_qty[index] += results.rows.item(i).product_qty;
-				}
+	var successSelectProduct = function (tx, results) {
+		debugWrite('successSelectProduct','start');
+		debugWrite('results',results);
+		debugWrite('results.rows',results.rows);
+		var len = results.rows.length;
+		for (var i=0; i<len; i++){
+			var index = product_id.indexOf(results.rows.item(i).product_id);
+			if (index == -1) {
+				product_id.push(results.rows.item(i).product_id);
+				product_qty.push(results.rows.item(i).product_qty);
+			} else {
+				product_qty[index] += results.rows.item(i).product_qty;
 			}
-			
-			productReadyDeferred.resolve();
-				
-			debugWrite('successSelectProduct','end');
 		}
 		
+		productReadyDeferred.resolve();
+			
+		debugWrite('successSelectProduct','end');
+	}
+	
+	var querySelectProduct = function (tx) {
 		var query = "SELECT '"+table+"' AS tbl,cuisine_product.product_id,SUM(cuisine_product_qty) AS product_qty FROM "+table+"_cuisine"
 		+" JOIN cuisine_product ON "+table+"_cuisine.cuisine_id=cuisine_product.cuisine_id"
 		+" WHERE "+table+"_cuisine."+table+"_id=?"
 		+" GROUP BY cuisine_product.product_id";
-		
 		debugWrite(query,[itemId[table][itemData]]);
 		tx.executeSql(query,[itemId[table][itemData]], successSelectProduct, StatementErrorCallback);
 	}
@@ -1587,24 +1546,22 @@ function queryDesc(table,db,id) {
 function querySame(table,db,item,typeId,callback) {
 	debugWrite('querySame','start');
 
-	var querySelect = function (tx) {
-		
-		var successSelect = function (tx, results) {
-			debugWrite('successSelect','start');
-			debugWrite('results',results);
-			debugWrite('results.rows',results.rows);
-			item.find("option[data-placeholder='false']").remove();
-			var len = results.rows.length;
-			for (var i=0; i<len; i++){
-				var option = "<option data-placeholder='false' value='"+results.rows.item(i).id+"'>"+results.rows.item(i).title+"</option>";
-				item.append(option);
-			}
-			callback(db);
-			debugWrite('successSelect','end');
+	var successSelect = function (tx, results) {
+		debugWrite('successSelect','start');
+		debugWrite('results',results);
+		debugWrite('results.rows',results.rows);
+		item.find("option[data-placeholder='false']").remove();
+		var len = results.rows.length;
+		for (var i=0; i<len; i++){
+			var option = "<option data-placeholder='false' value='"+results.rows.item(i).id+"'>"+results.rows.item(i).title+"</option>";
+			item.append(option);
 		}
-		
+		callback(db);
+		debugWrite('successSelect','end');
+	}
+	
+	var querySelect = function (tx) {
 		var query = "SELECT '"+table+"' AS tbl,"+table+"_id AS id,"+table+"_title AS title FROM "+table+" WHERE "+table+"_type_id=?";
-		
 		debugWrite(query,[typeId]);
 		tx.executeSql(query, [typeId], successSelect, StatementErrorCallback);
 	}
