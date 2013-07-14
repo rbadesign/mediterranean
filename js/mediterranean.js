@@ -698,8 +698,8 @@ function saveItem(table,db,id,callback) {
 		var item = $("."+table+"-item#"+id);
 		var itemData = item.jqmData("data");
 		var datetime = Date.parse(page.find("#cuisine-date").val()+"T"+page.find("#cuisine-time").val());
-			
-	
+		debugWrite("datetime",datetime);
+				
 		if (itemId[table][itemData] == -1) {
 			var queryInsert = function (tx) {
 				
@@ -1204,6 +1204,7 @@ function queryItems(table,db,callback) {
 			break;
 		case "forecast":
 			var datetime = Date.parse($("#"+table+"-date").val());
+			debugWrite("datetime",datetime);
 			
 			var querySelect = function (tx) {
 				var successSelect = function (tx, results) {
@@ -1263,6 +1264,7 @@ function queryItems(table,db,callback) {
 			break;
 		case "available":
 			var datetime = Date.parse($("#"+table+"-date").val());
+			debugWrite("datetime",datetime);
 			
 			var querySelect = function (tx) {
 				var successSelect = function (tx, results) {
@@ -1710,10 +1712,12 @@ $(document).on("pageinit",'#available',function(event){
 		var plannerId = addItem(planner);
 		var plannerPage = $("."+planner+"-page#"+plannerId);
 		var plannerItem = $("."+planner+"-item#"+plannerId);
-		var datetime = new Date(Date.parse($("#"+table+"-date").val())+12*60*60*1000);
-		if (datetime.getTime && datetime.getTimezoneOffset) datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
-		plannerPage.find("#cuisine-date").val($.format.date(datetime,"yyyy-MM-dd"));
-		plannerPage.find("#cuisine-time").val($.format.date(datetime,"HH:mm"));
+		var date = new Date(Date.parse($("#"+table+"-date").val()+"T12:00"));
+		debugWrite("date",date);
+		
+		if (date.getTime && date.getTimezoneOffset) date = new Date(date.getTime()+date.getTimezoneOffset()*60*1000);
+		plannerPage.find("#cuisine-date").val($.format.date(date,"yyyy-MM-dd"));
+		plannerPage.find("#cuisine-time").val($.format.date(date,"HH:mm"));
 		$("."+table+"-cuisine").each(function(index,element) {
 			var value = $(element).jqmData("cuisine-id");
 			var checked = $(element).find("#"+table+"-"+value+":checked");
