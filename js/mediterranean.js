@@ -244,7 +244,7 @@ function addItem(table) {
 		}
 		if (isValid) {
 			var datetime = new Date(page.find("#cuisine-date").val()+"T"+page.find("#cuisine-time").val());
-			datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
+			if (datetime.getTime && datetime.getTimezoneOffset) datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
 			var title = $.format.date(datetime,"yyyy-MM-dd HH:mm")
 			item.find("#item-title").text(title);
 			var db = getDatabase();
@@ -941,7 +941,7 @@ function queryItems(table,db,callback) {
 								var pageImage = page.find("img#cuisine-image");
 								itemId[table][itemData] = results.rows.item(i).id;
 								var datetime = new Date(results.rows.item(i).cuisine_datetime);
-								datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
+								if (datetime.getTime && datetime.getTimezoneOffset) datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
 								page.find("#cuisine-date").val($.format.date(datetime,"yyyy-MM-dd"));
 								page.find("#cuisine-time").val($.format.date(datetime,"HH:mm"));
 								var title = $.format.date(datetime,"yyyy-MM-dd HH:mm")
@@ -1711,7 +1711,7 @@ $(document).on("pageinit",'#available',function(event){
 		var plannerPage = $("."+planner+"-page#"+plannerId);
 		var plannerItem = $("."+planner+"-item#"+plannerId);
 		var datetime = new Date(Date.parse($("#"+table+"-date").val())+12*60*60*1000);
-		datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
+		if (datetime.getTime && datetime.getTimezoneOffset) datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
 		plannerPage.find("#cuisine-date").val($.format.date(datetime,"yyyy-MM-dd"));
 		plannerPage.find("#cuisine-time").val($.format.date(datetime,"HH:mm"));
 		$("."+table+"-cuisine").each(function(index,element) {
