@@ -47,3 +47,16 @@ function debugWrite(a,b) {
 	}
 }
 
+function parseDate(input) {
+  var parts = input.split('-');
+  // new Date(year, month [, date [, hours[, minutes[, seconds[, ms]]]]])
+  return new Date(parts[0], parts[1]-1, parts[2]); // months are 0-based
+}
+
+function parseDatetime(input) {
+  var parts = input.split("T");
+  var dateParts = parts[0].split('-');
+  var timeParts = parts[1].split(':');
+  // new Date(year, month [, date [, hours[, minutes[, seconds[, ms]]]]])
+  return new Date(dateParts[0], dateParts[1]-1, dateParts[2], timeParts[0], timeParts[1]); // months are 0-based
+}

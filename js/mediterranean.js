@@ -243,8 +243,7 @@ function addItem(table) {
 			debugWrite("error",e);
 		}
 		if (isValid) {
-			var datetime = new Date(page.find("#cuisine-date").val()+"T"+page.find("#cuisine-time").val());
-			if (datetime.getTime && datetime.getTimezoneOffset) datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
+			var datetime = parseDatetime(page.find("#cuisine-date").val()+"T"+page.find("#cuisine-time").val());
 			var title = $.format.date(datetime,"yyyy-MM-dd HH:mm")
 			item.find("#item-title").text(title);
 			var db = getDatabase();
@@ -697,7 +696,7 @@ function saveItem(table,db,id,callback) {
 		var page = $("."+table+"-page#"+id);
 		var item = $("."+table+"-item#"+id);
 		var itemData = item.jqmData("data");
-		var datetime = Date.parse(page.find("#cuisine-date").val()+"T"+page.find("#cuisine-time").val());
+		var datetime = parseDatetime(page.find("#cuisine-date").val()+"T"+page.find("#cuisine-time").val()).getTime();
 		debugWrite("datetime",datetime);
 				
 		if (itemId[table][itemData] == -1) {
@@ -941,7 +940,6 @@ function queryItems(table,db,callback) {
 								var pageImage = page.find("img#cuisine-image");
 								itemId[table][itemData] = results.rows.item(i).id;
 								var datetime = new Date(results.rows.item(i).cuisine_datetime);
-								if (datetime.getTime && datetime.getTimezoneOffset) datetime = new Date(datetime.getTime()+datetime.getTimezoneOffset()*60*1000);
 								page.find("#cuisine-date").val($.format.date(datetime,"yyyy-MM-dd"));
 								page.find("#cuisine-time").val($.format.date(datetime,"HH:mm"));
 								var title = $.format.date(datetime,"yyyy-MM-dd HH:mm")
@@ -1033,8 +1031,8 @@ function queryItems(table,db,callback) {
 					debugWrite('successRecords','end');
 				}
 				
-				var from_datetime = Date.parse($("#"+table+"-from-date").val());
-				var to_datetime = Date.parse($("#"+table+"-to-date").val());
+				var from_datetime = parseDate($("#"+table+"-from-date").val()).getTime();
+				var to_datetime = parseDate($("#"+table+"-to-date").val()).getTime();
 				var query = "SELECT '"+table+"' AS tbl,"+table+"_id AS id,* FROM "+table+" WHERE cuisine_datetime BETWEEN ? AND ? ORDER BY cuisine_datetime DESC";
 				
 				debugWrite(query,[from_datetime,to_datetime+24*60*60*1000]);
@@ -1203,7 +1201,7 @@ function queryItems(table,db,callback) {
 			db.transaction(querySelect, TransactionErrorCallback);
 			break;
 		case "forecast":
-			var datetime = Date.parse($("#"+table+"-date").val());
+			var datetime = parseDate($("#"+table+"-date").val()).getTime();
 			debugWrite("datetime",datetime);
 			
 			var querySelect = function (tx) {
@@ -1263,7 +1261,7 @@ function queryItems(table,db,callback) {
 			db.transaction(querySelect, TransactionErrorCallback);
 			break;
 		case "available":
-			var datetime = Date.parse($("#"+table+"-date").val());
+			var datetime = parseDate($("#"+table+"-date").val()).getTime();
 			debugWrite("datetime",datetime);
 			
 			var querySelect = function (tx) {
@@ -1406,7 +1404,7 @@ function queryStatus(table,db,id) {
 	var item = $("."+table+"-item#"+id);
 	var itemData = item.jqmData("data");
 	
-	var datetime = Date.parse(page.find("#cuisine-date").val()+"T"+page.find("#cuisine-time").val());
+	var datetime = parseDatetime(page.find("#cuisine-date").val()+"T"+page.find("#cuisine-time").val()).getTime();
 	debugWrite('datetime',datetime);
 
 	var other;
@@ -1712,12 +1710,10 @@ $(document).on("pageinit",'#available',function(event){
 		var plannerId = addItem(planner);
 		var plannerPage = $("."+planner+"-page#"+plannerId);
 		var plannerItem = $("."+planner+"-item#"+plannerId);
-		var date = new Date(Date.parse($("#"+table+"-date").val()+"T12:00"));
-		debugWrite("date",date);
-		
-		if (date.getTime && date.getTimezoneOffset) date = new Date(date.getTime()+date.getTimezoneOffset()*60*1000);
-		plannerPage.find("#cuisine-date").val($.format.date(date,"yyyy-MM-dd"));
-		plannerPage.find("#cuisine-time").val($.format.date(date,"HH:mm"));
+		var datetime = parseDatetime($("#"+table+"-date").val()+"T12:00");
+		debugWrite("datetime",datetime);
+		plannerPage.find("#cuisine-date").val($.format.date(datetime,"yyyy-MM-dd"));
+		plannerPage.find("#cuisine-time").val($.format.date(datetime,"HH:mm"));
 		$("."+table+"-cuisine").each(function(index,element) {
 			var value = $(element).jqmData("cuisine-id");
 			var checked = $(element).find("#"+table+"-"+value+":checked");
