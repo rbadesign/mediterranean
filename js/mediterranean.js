@@ -156,7 +156,16 @@ function createDatabase(db,callback) {
 						
 						tx.executeSql("DELETE FROM diet",[],successDeleteDiet,StatementErrorCallback);		
 					} else {
-						dietReadyDeferred.resolve();
+						products.forEach(function(value,index) {
+							var successUpdate = function (tx,results) {
+								if(++dietCount==products.length) {
+									dietReadyDeferred.resolve();
+								}
+							}
+							var query = "UPDATE diet SET product_title=? WHERE product_id=?";
+							debugWrite(query,[$.mediterranean.i18n[currentLanguage][value.id]||value.title,value.id]);
+							tx.executeSql(query,[$.mediterranean.i18n[currentLanguage][value.id]||value.title,value.id], successUpdate, StatementErrorCallback);
+						});
 					}
 				}
 				tx.executeSql("SELECT * FROM diet",[],successCountDiet,StatementErrorCallback);		
@@ -1594,6 +1603,11 @@ var languageReadyDeferred = $.Deferred();
 
 $.when(deviceReadyDeferred, jqmReadyDeferred, languageReadyDeferred).then(function() {
 	debugWrite('when(deviceReadyDeferred, jqmReadyDeferred, languageReadyDeferred).then','start');
+	
+	var optionNo = $("option[value='0']","select.cuisine-product");
+	optionNo.text($.mediterranean.i18n[currentLanguage].no||optionNo.text());
+	var optionYes = $("option[value='1']","select.cuisine-product");
+	optionYes.text($.mediterranean.i18n[currentLanguage].yes||optionYes.text());
 	
 	for(i=1; i<10 ; i++) {
 		var table = "diet";
