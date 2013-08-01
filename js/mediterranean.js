@@ -1954,7 +1954,6 @@ function StatementErrorCallback(tx,error) {
 // Wait for Cordova to load
 //
 document.addEventListener("deviceready", onDeviceReady, false);
-document.addEventListener("backbutton", handleBackButton, false);
 
 // Cordova is ready
 //
@@ -1976,6 +1975,7 @@ function onDeviceReady() {
 		languageReadyDeferred.resolve();
 	}
 	
+	document.addEventListener("backbutton", handleBackButton, false);
 	debugWrite("onDeviceReady","end");
 }
 
