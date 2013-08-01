@@ -1,5 +1,8 @@
 // JavaScript Document
-var currentLanguage = "ru";
+$.mediterranean = $.mediterranean || {};
+$.mediterranean.i18n = $.mediterranean.i18n || {};
+
+var currentLanguage = "en";
 
 var periods = Array(
 	{ id:"day", title:"в день", delay:24*60*60*1000},
@@ -20,7 +23,7 @@ var products = Array(
 	{ id:"vegetables", title:"Овощи", qty:1, period:"day" },
 	{ id:"bread", title:"Хлеб", qty:1, period:"day" },
 	{ id:"water", title:"Вода", qty:6, period:"day" },
-	{ id:"vine", title:"Красное вино", qty:2, period:"day" }
+	{ id:"wine", title:"Красное вино", qty:2, period:"day" }
 );
 
 var cuisineTypes = Array(
@@ -28,7 +31,7 @@ var cuisineTypes = Array(
 	{ id:"soup", title:"Суп" },
 	{ id:"garnish", title:"Гарнир" },
 	{ id:"salad", title:"Салат" },
-	{ id:"drinks", title:"Напитки" },
+	{ id:"drink", title:"Напитки" },
 	{ id:"desert", title:"Десерт" },
 	{ id:"snack", title:"Закуска" }
 );
@@ -114,8 +117,8 @@ function createDatabase(db,callback) {
 							}
 						}
 						var query = "INSERT INTO periods(period_id,period_title,period_delay) VALUES (?,?,?)";
-						debugWrite(query,[value.id,value.title,value.delay]);
-						tx.executeSql(query,[value.id,value.title,value.delay],successInsert,StatementErrorCallback);
+						debugWrite(query,[value.id,$.mediterranean.i18n[currentLanguage][value.id]||value.title,value.delay]);
+						tx.executeSql(query,[value.id,$.mediterranean.i18n[currentLanguage][value.id]||value.title,value.delay],successInsert,StatementErrorCallback);
 					});
 				}
 				
@@ -129,8 +132,8 @@ function createDatabase(db,callback) {
 							}
 						}
 						var query = "INSERT INTO cuisine_types(cuisine_type_id,cuisine_type_title) VALUES (?,?)";
-						debugWrite(query,[value.id,value.title]);
-						tx.executeSql(query,[value.id,value.title],successInsert,StatementErrorCallback);
+						debugWrite(query,[value.id,$.mediterranean.i18n[currentLanguage][value.id]||value.title]);
+						tx.executeSql(query,[value.id,$.mediterranean.i18n[currentLanguage][value.id]||value.title],successInsert,StatementErrorCallback);
 					});			
 				}
 				
@@ -146,8 +149,8 @@ function createDatabase(db,callback) {
 									}
 								}
 								var query = "INSERT INTO diet(product_id,product_title,product_qty,product_period_id) VALUES (?,?,?,?)";
-								debugWrite(query,[value.id,value.title,value.qty,value.period]);
-								tx.executeSql(query,[value.id,value.title,value.qty,value.period], successInsert, StatementErrorCallback);
+								debugWrite(query,[value.id,$.mediterranean.i18n[currentLanguage][value.id]||value.title,value.qty,value.period]);
+								tx.executeSql(query,[value.id,$.mediterranean.i18n[currentLanguage][value.id]||value.title,value.qty,value.period], successInsert, StatementErrorCallback);
 							});
 						}
 						
@@ -199,6 +202,10 @@ function addItem(table) {
 	item.find("a").addClass(table);
 	page.find("a").addClass(table);
 
+	$("label[for='cuisine-title']",page).each(function(index,element) {
+		$(element).text($.mediterranean.i18n[currentLanguage].cuisineTitle||$(element).text());
+	});
+	
 	try {
 		page.find("form").validate();
 	} catch(e) {
@@ -1572,21 +1579,45 @@ function querySame(table,db,item,typeId,callback) {
 
 $(document).one('pagebeforecreate',function(event){
 	debugWrite('pagebeforecreate');
+	jqmReadyDeferred.resolve();
 
+	tables.forEach(function(value,index) {
+		var page = $("#"+value.id);
+		page.jqmData("table",value.id);
+		page.find("a").jqmData("table",value.id);
+	});
+});
+
+var deviceReadyDeferred = $.Deferred();
+var jqmReadyDeferred = $.Deferred();
+var languageReadyDeferred = $.Deferred();
+
+$.when(deviceReadyDeferred, jqmReadyDeferred, languageReadyDeferred).then(function() {
+	debugWrite('when(deviceReadyDeferred, jqmReadyDeferred, languageReadyDeferred).then','start');
+	
 	for(i=1; i<10 ; i++) {
 		var table = "diet";
-		var option = "<option data-placeholder='false' value='"+i+"'>"+i+" раз"+"</option>";
+		var option = "<option data-placeholder='false' value='"+i+"'>"+i+" "+($.mediterranean.i18n[currentLanguage].times||"раз")+"</option>";
 		$("#"+table+"-product-id-qty").append(option);
 	}
 
 	periods.forEach(function(value,index) {
 		var table = "diet";
-		var option = "<option data-placeholder='false' value='"+value.id+"'>"+value.title+"</option>";
+		var option = "<option data-placeholder='false' value='"+value.id+"'>"+($.mediterranean.i18n[currentLanguage][value.id]||value.title)+"</option>";
 		$("#"+table+"-product-id-period").append(option);
 	});
 	
+	$("option[data-placeholder='true']","select.cuisine-type").each(function(index,element) {
+		var cuisineTypePlaceholder = $(element);
+		cuisineTypePlaceholder.text($.mediterranean.i18n[currentLanguage].cuisineTypePlaceholder||cuisineTypePlaceholder.text());
+	});
+	var cuisinePlaceholder = $("option[data-placeholder='true']","select.diary-cuisine");
+	cuisinePlaceholder.text($.mediterranean.i18n[currentLanguage].cuisinePlaceholder||cuisinePlaceholder.text());
+	var cuisinePlaceholder = $("option[data-placeholder='true']","select.planner-cuisine");
+	cuisinePlaceholder.text($.mediterranean.i18n[currentLanguage].cuisinePlaceholder||cuisinePlaceholder.text());
+
 	cuisineTypes.forEach(function(value,index) {
-		var option = "<option data-placeholder='false' value='"+value.id+"'>"+value.title+"</option>";
+		var option = "<option data-placeholder='false' value='"+value.id+"'>"+($.mediterranean.i18n[currentLanguage][value.id]||value.title)+"</option>";
 		$("select.cuisine-type").append(option);
 	});
 	
@@ -1597,7 +1628,7 @@ $(document).one('pagebeforecreate',function(event){
 		item.find("."+table+"-product").jqmData("product-id",value.id);
 		item.find("."+table+"-product-id").removeClass(""+table+"-product-id").addClass(""+table+"-"+value.id);
 		item.find("#"+table+"-product-id").attr("id", ""+table+"-"+value.id).attr("name", ""+table+"-"+value.id);
-		item.find("label[for='"+table+"-product-id']").attr("for",""+table+"-"+value.id).text(value.title);
+		item.find("label[for='"+table+"-product-id']").attr("for",""+table+"-"+value.id).text($.mediterranean.i18n[currentLanguage][value.id]||value.title);
 		item.appendTo("#"+table+"-product");
 	});
 		
@@ -1608,7 +1639,7 @@ $(document).one('pagebeforecreate',function(event){
 		item.jqmData("product-id",value.id);
 		item.find("."+table+"-product-id").removeClass(""+table+"-product-id").addClass(""+table+"-"+value.id);
 		item.find("#"+table+"-product-id").attr("id", ""+table+"-"+value.id).attr("name", ""+table+"-"+value.id);
-		item.find("label[for='"+table+"-product-id']").attr("for",""+table+"-"+value.id).text(value.title);
+		item.find("label[for='"+table+"-product-id']").attr("for",""+table+"-"+value.id).text($.mediterranean.i18n[currentLanguage][value.id]||value.title);
 		item.find("#"+table+"-"+value.id).attr("min",0).attr("max",value.qty).val(1);
 		item.appendTo("#"+table+"-product");
 		item.find("[data-role='none']").removeAttr("data-role");
@@ -1619,7 +1650,7 @@ $(document).one('pagebeforecreate',function(event){
 		var item = $("."+table+"-product-template").clone();
 		item.removeClass(""+table+"-product-template").addClass(""+table+"-product");
 		item.jqmData("product-id",value.id);
-		item.find("#"+table+"-product-id").attr("id", ""+table+"-"+value.id).attr("name", ""+table+"-"+value.id).text(value.title);
+		item.find("#"+table+"-product-id").attr("id", ""+table+"-"+value.id).attr("name", ""+table+"-"+value.id).text($.mediterranean.i18n[currentLanguage][value.id]||value.title);
 		item.find("#"+table+"-product-id-qty").attr("id", ""+table+"-"+value.id+"-qty").attr("name", ""+table+"-"+value.id+"-qty").val(value.qty);
 		item.find("#"+table+"-product-id-period").attr("id", ""+table+"-"+value.id+"-period").attr("name", ""+table+"-"+value.id+"-period").val(value.period);
 		item.find("label[for='"+table+"-product-id']").attr("for",""+table+"-"+value.id);
@@ -1630,35 +1661,21 @@ $(document).one('pagebeforecreate',function(event){
 	});
 	
 	tables.forEach(function(value,index) {
+		var page = $("#"+value.id);
 		var header = $(".header-template").clone();
-		header.find("h2").text(value.title);
-		header.prependTo($("#"+value.id+"[data-role='page']")).removeClass("header-template");
-		debugWrite("h2",header.find("h2").text());
-		debugWrite(value.id,value.title);
+		header.find("h2").text($.mediterranean.i18n[currentLanguage][value.id]||value.title);
+		header.prependTo(page).removeClass("header-template");
+		debugWrite(value.id,$.mediterranean.i18n[currentLanguage][value.id]||value.title);
 	});
-});
-
-var deviceReadyDeferred = $.Deferred();
-var jqmReadyDeferred = $.Deferred();
-
-$.when(deviceReadyDeferred, jqmReadyDeferred).then(function() {
-	debugWrite('when(deviceReadyDeferred, jqmReadyDeferred).then','start');
+		
 	var db = getDatabase();
-	queryItems("cuisine",db,function(db){
-		$.mobile.changePage("#available");
+	debugWrite("db.version",db.version);
+	createDatabase(db, function(db) {
+		queryItems("cuisine",db,function(db){
+			$.mobile.changePage("#available");
+		});
 	});
-	debugWrite('when(deviceReadyDeferred, jqmReadyDeferred).then','end');
-});
-
-$(document).one("pageinit",function(event){
-	debugWrite("pageinit",$(this));
-		
-	tables.forEach(function(value,index) {
-		$("#"+value.id).jqmData("table",value.id);
-		$("#"+value.id).find("a").jqmData("table",value.id);
-	});
-		
-	jqmReadyDeferred.resolve();
+	debugWrite('when(deviceReadyDeferred, jqmReadyDeferred, languageReadyDeferred).then','end');
 });
 
 $(document).on("pageinit",'#main',function(event){
@@ -1894,6 +1911,19 @@ $(document).on("pagebeforecreate","div[data-role='page']",function(event) {
 	debugWrite("pagebeforecreate",$(this).find("input[type='time']"));
 	$(this).find("input[type='date']").attr("type","text").mobiscroll().date({theme:"jqm",dateFormat:"yy-mm-dd"});
 	$(this).find("input[type='time']").attr("type","text").mobiscroll().time({theme:"jqm",timeFormat:"HH:ii"});
+	$(this).find("a[data-rel='back']").each(function(index,element) {
+		$(element).text($.mediterranean.i18n[currentLanguage].back||$(element).text());
+	});
+});
+
+$(document).on("pagebeforecreate","#about",function(event) {
+	var content = $("div[data-role='content']",this);
+	content.html($.mediterranean.i18n[currentLanguage].about||content.html());
+});
+
+$(document).on("pagebeforecreate","#help",function(event) {
+	var content = $("div[data-role='content']",this);
+	content.html($.mediterranean.i18n[currentLanguage].help||content.html());
 });
 
 function fail(error) {        
@@ -1924,17 +1954,28 @@ function StatementErrorCallback(tx,error) {
 // Wait for Cordova to load
 //
 document.addEventListener("deviceready", onDeviceReady, false);
+document.addEventListener("backbutton", handleBackButton, false);
 
 // Cordova is ready
 //
 function onDeviceReady() {
 	debugWrite("onDeviceReady","start");
-	var db = getDatabase();
-	debugWrite("db.version",db.version);
-	createDatabase(db, function(db) {
-		deviceReadyDeferred.resolve();
-	});
-	document.addEventListener("backbutton", handleBackButton, false);
+	deviceReadyDeferred.resolve();
+
+	try {
+		navigator.globalization.getPreferredLanguage(
+			function(language) { 
+				if($.mediterranean.i18n[language.substr(0,2)]) currentLanguage = language.substr(0,2); 
+				languageReadyDeferred.resolve();
+			},
+			function() {
+				languageReadyDeferred.resolve();
+			}
+		)
+	} catch(e) {
+		languageReadyDeferred.resolve();
+	}
+	
 	debugWrite("onDeviceReady","end");
 }
 

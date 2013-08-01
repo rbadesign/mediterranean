@@ -28,7 +28,7 @@
 			$.support.cors = true;
 			$.mobile.allowCrossDomainPages = true;
 			$.mobile.phonegapNavigationEnabled = true;
-			$.mobile.page.prototype.options.domCache = true;
+			$.mobile.page.prototype.options.domCache = false;
 			$.mobile.ajaxEnabled=true;
 			$.mobile.pushStateEnabled=true;
 		});
@@ -73,6 +73,10 @@
   <!-- Extra Codiqa features -->
   <script src="js/codiqa.ext.js"></script>
   <script src="js/snippets.js"></script>
+  
+  <script src="js/i18n/mediterranean.i18n.ru.js"></script>
+  <script src="js/i18n/mediterranean.i18n.en.js"></script>
+
   <script src="js/mediterranean.js"></script>
    
 </head>
@@ -89,23 +93,23 @@
     </a>
 </li>
 
+<div data-theme="b" data-role="header" class="header-template" data-position="fixed">
+    <h2>Средиземноморская диета</h2>
+    <div data-role="navbar">
+        <ul>
+            <li><a href="#planner"><img src="24x24/appointment-new.png" width="24" height="24"></a></li>
+            <li><a href="#available"><img src="24x24/view-choose.png" width="24" height="24"></a></li>
+            <li><a href="#diary"><img src="24x24/address-book-new.png" width="24" height="24"></a></li>
+        </ul>
+        <ul>
+            <li><a href="#cuisine"><img src="24x24/folder.png" width="24" height="24"></a></li>
+            <li><a href="#forecast"><img src="24x24/emblem-question.png" width="24" height="24"></a></li>
+            <li><a href="#diet"><img src="24x24/globe.png" width="24" height="24"></a></li>
+        </ul>
+    </div><!-- /navbar -->
+</div>
 
-<div data-role="page" id="main" data-dom-cache="true">
-    <div data-theme="b" data-role="header" class="header-template" data-position="fixed">
-    	<h2>Средиземноморская диета</h2>
-       	<div data-role="navbar">
-            <ul>
-                <li><a href="#planner"><img src="24x24/appointment-new.png" width="24" height="24"></a></li>
-                <li><a href="#available"><img src="24x24/view-choose.png" width="24" height="24"></a></li>
-                <li><a href="#diary"><img src="24x24/address-book-new.png" width="24" height="24"></a></li>
-            </ul>
-            <ul>
-              	<li><a href="#cuisine"><img src="24x24/folder.png" width="24" height="24"></a></li>
-                <li><a href="#forecast"><img src="24x24/emblem-question.png" width="24" height="24"></a></li>
-                <li><a href="#diet"><img src="24x24/globe.png" width="24" height="24"></a></li>
-            </ul>
-        </div><!-- /navbar -->
-    </div>
+<div data-role="page" id="main">
     <div data-role="content">
     	<center><div id="calendar"></div></center>
     </div>
@@ -120,7 +124,7 @@
     </div>
 </div>
 
-<div data-role="page" id="forecast" data-dom-cache="true">
+<div data-role="page" id="forecast">
     <div data-role="content">
         <div class="filter">
             <input name="forecast-date" id="forecast-date" placeholder="" value="" type="date">
@@ -175,7 +179,7 @@
     </div>
 </div>
 
-<div data-role="page" id="available" data-dom-cache="true">
+<div data-role="page" id="available">
     <div data-role="content">
         <div class="filter">
             <input name="available-date" id="available-date" placeholder="" value="" type="date">
@@ -225,7 +229,7 @@
     </div>
 </div>
 
-<div data-role="page" id="diary" data-dom-cache="true">
+<div data-role="page" id="diary">
     <div data-role="content">
         <div class="filter">
             <div class="ui-grid-a">
@@ -276,7 +280,7 @@
     </div>
 </div>
 
-<div data-role="page" id="planner" data-dom-cache="true">
+<div data-role="page" id="planner">
     <div data-role="content">
         <div class="filter">
             <div class="ui-grid-a">
@@ -327,7 +331,7 @@
     </div>
 </div>
 
-<div data-role="page" id="cuisine" data-dom-cache="true">
+<div data-role="page" id="cuisine">
     <div data-role="content">
         <div data-role="fieldcontain">
             <ul data-role="listview" data-inset="false" data-filter="true" class="cuisine-items">
