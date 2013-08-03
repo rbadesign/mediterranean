@@ -16,8 +16,13 @@ function saveSettings() {
 		debugWrite("error",e);
 	}
 }
+
 function loadImage(image, imagePath) {
 	debugWrite("loadImage",imagePath);
+	function fail(error) {        
+		debugWrite('Fail',error);
+		return false;
+	}
 	var createReader = function (readable) {
 		debugWrite("createReader","start");
 		var reader = new FileReader();
