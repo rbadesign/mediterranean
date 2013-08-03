@@ -224,6 +224,10 @@
 		item.find("a").addClass(table);
 		page.find("a").addClass(table);
 	
+		var header = $("div[data-role='header']",page);
+		var headerTitle = $("h2",header);
+		headerTitle.text($.mediterranean.i18n[currentLanguage][table+"Page"]||headerTitle.text());
+		
 		$("label[for='cuisine-title']",page).each(function(index,element) {
 			$(element).text($.mediterranean.i18n[currentLanguage].cuisineTitle||$(element).text());
 		});

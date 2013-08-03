@@ -12,6 +12,10 @@
 		diary:"Дневник",
 		cuisine:"Блюда",
 				
+		plannerPage:"План",
+		diaryPage:"Дневник",
+		cuisinePage:"Блюдo",
+
 		times:"раз",
 		day:"в день",
 		week:"в неделю",

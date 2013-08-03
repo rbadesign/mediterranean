@@ -12,6 +12,10 @@
 		diary:"Diary",
 		cuisine:"Cuisine",
 				
+		plannerPage:"Planner",
+		diaryPage:"Diary",
+		cuisinePage:"Cuisine",
+
 		times:"times",
 		day:"day",
 		week:"week",
